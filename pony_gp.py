@@ -334,6 +334,40 @@ def find_and_replace_subtree(root, subtree, node_idx, idx):
     return idx
 
 
+def find_and_replace_symbol(root, symbol, node_idx, idx):
+    """
+    Returns the current index and replaces the root symbol with another symbol
+    at the given index. The index is based on depth-first left-to-right
+    traversal.
+
+    TODO breakout when root is replaced with subtree
+
+    :param root: Root of the tree
+    :type root: list
+    :param symbol: Symbol that will replace the root
+    :type symbol: str
+    :param node_idx: Index of the node to be replaced
+    :type node_idx: int
+    :param idx: Current index
+    :type idx: int
+    :return: Current index
+    :rtype: int
+    """
+
+    # Check if index is the given node idx for replacement
+    if node_idx == idx:
+        # Replace the subtree
+        root[0] = symbol
+    else:
+        # Iterate over the children
+        for child in get_children(root):
+            # Recursively traverse the tree
+            idx = idx + 1
+            idx = find_and_replace_symbol(child, symbol, node_idx, idx)
+
+    return idx
+
+
 def get_random_symbol(depth, max_depth, symbols, full=False):
     """
     Return a randomly chosen symbol. The depth determines if a terminal
@@ -592,7 +626,7 @@ def search_loop(population, param):
 
         # Vary the population by mutation
         for i in range(len(new_population)):
-            new_population[i] = subtree_mutation(new_population[i], param)
+            new_population[i] = point_mutation(new_population[i], param)
 
         # Evaluate fitness
         evaluate_fitness(new_population, param, cache)
@@ -666,18 +700,18 @@ def print_stats(generation, individuals):
     print(display_tree(individuals[0]["genome"]))
 
 
-def subtree_mutation(individual, param):
+def point_mutation(individual, param):
     """
-    Return a new individual by randomly picking a node and growing a
-    new subtree from it.
+        Return a new individual by randomly picking a node and picking a new
+        symbol with the same arity.
 
-    :param individual: Individual to mutate
-    :type individual: dict
-    :param param: parameters for pony gp
-    :type param: dict
-    :returns: Mutated individual
-    :rtype: dict
-    """
+        :param individual: Individual to mutate
+        :type individual: dict
+        :param param: parameters for pony gp
+        :type param: dict
+        :returns: Mutated individual
+        :rtype: dict
+        """
 
     # Copy the individual for mutation
     new_individual = {
@@ -686,6 +720,44 @@ def subtree_mutation(individual, param):
     }
     # Check if mutation should be applied
     if random.random() < param["mutation_probability"]:
+        # Pick random node
+        end_node_idx = get_number_of_nodes(new_individual["genome"], 0) - 1
+        node_idx = random.randint(0, end_node_idx)
+        node = get_node_at_index(new_individual["genome"], node_idx)
+        # Get a new symbol for the subtree
+
+        if param["symbols"]["arities"][node[0]] > 0:
+            new_symbol = random.choice(param["symbols"]["functions"])
+        else:
+            new_symbol = random.choice(param["symbols"]["terminals"])
+
+        node[0] = new_symbol
+
+    # Return the individual
+    return new_individual
+
+
+def subtree_mutation(individual, param):
+    """
+        Return a new individual by randomly picking a node and growing a
+        new subtree from it.
+
+        :param individual: Individual to mutate
+        :type individual: dict
+        :param param: parameters for pony gp
+        :type param: dict
+        :returns: Mutated individual
+        :rtype: dict
+        """
+
+    # Copy the individual for mutation
+    new_individual = {
+        "genome": copy.deepcopy(individual["genome"]),
+        "fitness": DEFAULT_FITNESS
+    }
+    # Check if mutation should be applied
+    if random.random() < param["mutation_probability"]:
+
         # Pick random node
         end_node_idx = get_number_of_nodes(new_individual["genome"], 0) - 1
         node_idx = random.randint(0, end_node_idx)
@@ -724,7 +796,7 @@ def subtree_mutation(individual, param):
         assert get_max_tree_depth(new_individual["genome"], 0, 0) \
                <= param["max_depth"]
 
-    # Return the individual
+        # Return the individual
     return new_individual
 
 
@@ -923,7 +995,7 @@ def get_symbols():
     """
 
     # Dictionary of symbols and their arity
-    arities = {"1": 0,
+    arities = {#"1": 0,
                "x0": 0,
                "x1": 0,
                "+": 2,
@@ -994,14 +1066,14 @@ def parse_arguments():
     # Command line arguments
     parser = optparse.OptionParser()
     # Population size
-    parser.add_option("-p", "--population_size", type=int, default=20,
+    parser.add_option("-p", "--population_size", type=int, default=80,
                       dest="population_size", help="population size")
     # Size of an individual
     parser.add_option("-m", "--max_depth", type=int, default=3,
                       dest="max_depth", help="Max depth of tree")
     # Number of elites, i.e. the top solution from the old population
     # transferred to the new population
-    parser.add_option("-e", "--elite_size", type=int, default=1,
+    parser.add_option("-e", "--elite_size", type=int, default=2,
                       dest="elite_size", help="elite size")
     # Generations is the number of times the EA will iterate the search loop
     parser.add_option("-g", "--generations", type=int, default=20,
@@ -1021,7 +1093,7 @@ def parse_arguments():
     # Probability of mutation
     parser.add_option("--mp", "--mutation_probability", type=float,
                       dest="mutation_probability",
-                      default=0.1, help="mutation probability")
+                      default=0.2, help="mutation probability")
     # Fitness case file
     parser.add_option("--fc", "--fitness_cases", default="fitness_cases.csv",
                       dest="fitness_cases",
