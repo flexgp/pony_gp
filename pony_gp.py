@@ -301,39 +301,6 @@ def replace_subtree(new_subtree, old_subtree):
         old_subtree.append(copy.deepcopy(node))
 
 
-def find_and_replace_subtree(root, subtree, node_idx, idx):
-    """
-    Returns the current index and replaces the root with another subtree at the
-    given index. The index is based on depth-first left-to-right traversal.
-
-    TODO breakout when root is replaced with subtree
-
-    :param root: Root of the tree
-    :type root: list
-    :param subtree: Subtree that will replace the root
-    :type subtree: list
-    :param node_idx: Index of the node to be replaced
-    :type node_idx: int
-    :param idx: Current index
-    :type idx: int
-    :return: Current index
-    :rtype: int
-    """
-
-    # Check if index is the given node idx for replacement
-    if node_idx == idx:
-        # Replace the subtree
-        replace_subtree(subtree, root)
-    else:
-        # Iterate over the children
-        for child in get_children(root):
-            # Recursively traverse the tree
-            idx = idx + 1
-            idx = find_and_replace_subtree(child, subtree, node_idx, idx)
-
-    return idx
-
-
 def find_and_replace_symbol(root, symbol, node_idx, idx):
     """
     Returns the current index and replaces the root symbol with another symbol
@@ -545,8 +512,7 @@ def initialize_population(param):
         print('Initial tree nr:%d nodes:%d max_depth:%d: %s' %
               (i, get_number_of_nodes(tree, 0),
                get_max_tree_depth(tree, 0, 0), tree))
-        print(display_tree(tree))
-
+        
     return individuals
 
 
@@ -697,7 +663,6 @@ def print_stats(generation, individuals):
          ave_depth, std_depth,
          max(size_values), max(depth_values), max(fitness_values),
          individuals[0]))
-    print(display_tree(individuals[0]["genome"]))
 
 
 def point_mutation(individual, param):
@@ -734,69 +699,6 @@ def point_mutation(individual, param):
         node[0] = new_symbol
 
     # Return the individual
-    return new_individual
-
-
-def subtree_mutation(individual, param):
-    """
-        Return a new individual by randomly picking a node and growing a
-        new subtree from it.
-
-        :param individual: Individual to mutate
-        :type individual: dict
-        :param param: parameters for pony gp
-        :type param: dict
-        :returns: Mutated individual
-        :rtype: dict
-        """
-
-    # Copy the individual for mutation
-    new_individual = {
-        "genome": copy.deepcopy(individual["genome"]),
-        "fitness": DEFAULT_FITNESS
-    }
-    # Check if mutation should be applied
-    if random.random() < param["mutation_probability"]:
-
-        # Pick random node
-        end_node_idx = get_number_of_nodes(new_individual["genome"], 0) - 1
-        node_idx = random.randint(0, end_node_idx)
-        # Get node depth
-        node_depth, cnt = get_depth_from_index(new_individual["genome"],
-                                               0,
-                                               node_idx,
-                                               0)
-        assert param["max_depth"] >= node_depth
-
-        # Get a new symbol for the subtree
-        new_subtree = [get_random_symbol(node_depth,
-                                         param["max_depth"],
-                                         param["symbols"])
-                       ]
-        # Grow tree if it is a function symbol
-        if new_subtree[0] in param["symbols"]["functions"]:
-            # Grow to full depth?
-            full = bool(random.getrandbits(1))
-            # Grow subtree
-            grow(new_subtree,
-                 node_depth,
-                 param["max_depth"],
-                 full,
-                 param["symbols"])
-
-        assert get_max_tree_depth(new_subtree, node_depth, 0) \
-               <= param["max_depth"]
-
-        # Replace the original subtree with the new subtree
-        find_and_replace_subtree(new_individual["genome"],
-                                 new_subtree,
-                                 node_idx,
-                                 0)
-
-        assert get_max_tree_depth(new_individual["genome"], 0, 0) \
-               <= param["max_depth"]
-
-        # Return the individual
     return new_individual
 
 
@@ -1154,93 +1056,6 @@ def out_of_sample_test(individual, fitness_cases, targets, symbols):
     """
     evaluate_individual(individual, fitness_cases, targets, symbols)
     print("Best solution on test data:" + str(individual))
-    print(display_tree(individual["genome"]))
-
-
-def stack_str_blocks(blocks):
-    """
-    Takes a list of multiline strings, and stacks them horizontally. Edited from
-    http://stackoverflow.com/questions/15675261/displaying-a-tree-in-ascii
-    :param node: Block
-    :type node: list
-    :return: Block string
-    :rtype str:
-    """
-    builder = []
-    block_lens = []
-    for block in blocks:
-        try:
-            _len = block.index("\n")
-        except ValueError:
-            _len = len(block)
-        block_lens.append(_len)
-
-    split_blocks = [bl.split('\n') for bl in blocks]
-
-    for line_list in itertools.izip_longest(*split_blocks, fillvalue=None):
-        for i, line in enumerate(line_list):
-            if line is None:
-                builder.append(' ' * block_lens[i])
-            else:
-                builder.append(line)
-            if i != len(line_list) - 1:
-                builder.append(' ')  # Padding
-        builder.append('\n')
-
-    return ''.join(builder[:-1])
-
-
-def display_tree(node):
-    """
-    Return a tree as an ascii string. Edited from
-    http://stackoverflow.com/questions/15675261/displaying-a-tree-in-ascii
-    :param node: Tree node
-    :type node: list
-    :return: ascii string of tree
-    :rtype str:
-    """
-    if len(node) == 1:
-        return node[0]
-    elif len(node) == 3:
-        child_strs = [display_tree(node[1]), #display_tree(node[0]),
-                      display_tree(node[2])]
-    else:
-        raise
-
-    child_widths = []
-    for _str in child_strs:
-        try:
-            _len = _str.index("\n")
-        except ValueError:
-            _len = len(_str)
-        child_widths.append(_len)
-
-    # How wide is this block?
-    display_width = max(len(node[0]),
-                        sum(child_widths) + len(child_widths) - 1)
-
-    # Determines midpoints of child blocks
-    child_midpoints = []
-    child_end = 0
-    for width in child_widths:
-        child_midpoints.append(child_end + (width // 2))
-        child_end += width + 1
-
-    # Builds up the brace, using the child midpoints
-    brace_builder = []
-    for i in xrange(display_width):
-        if i < child_midpoints[0] or i > child_midpoints[-1]:
-            brace_builder.append(' ')
-        elif i in child_midpoints:
-            brace_builder.append('+')
-        else:
-            brace_builder.append('-')
-    brace = ''.join(brace_builder)
-
-    name_str = '{:^{}}'.format(node[0], display_width)
-    below = stack_str_blocks(child_strs)
-
-    return name_str + '\n' + brace + '\n' + below
 
 
 if __name__ == '__main__':
