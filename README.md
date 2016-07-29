@@ -17,4 +17,5 @@ Implementation of Genetic Programming(GP), see e.g.
 the GP algorithm works. The 
 intended use is for teaching.
 The design is supposed to be simple, self contained and use core python
-libraries.
+libraries. The aim is to allow the developer to quickly start using and 
+developing.
