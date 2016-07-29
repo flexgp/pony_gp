@@ -12,8 +12,7 @@ Python 2.7
 
 #Description
 
-Implementation of Genetic Programming(GP), see e.g. <http://geneticprogramming
-.org>. The purpose of this code is to describe how the GP algorithm works. The 
+Implementation of Genetic Programming(GP), see e.g. <http://geneticprogramming.org>. The purpose of this code is to describe how the GP algorithm works. The 
 intended use is for teaching.
 The design is supposed to be simple, self contained and use core python
 libraries.
