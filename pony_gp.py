@@ -30,6 +30,7 @@ import random
 import math
 import copy
 import sys
+import itertools
 
 """
 
@@ -510,6 +511,7 @@ def initialize_population(param):
         print('Initial tree nr:%d nodes:%d max_depth:%d: %s' %
               (i, get_number_of_nodes(tree, 0),
                get_max_tree_depth(tree, 0, 0), tree))
+        print(display_tree(tree))
 
     return individuals
 
@@ -632,8 +634,8 @@ def print_stats(generation, individuals):
         :rtype: tuple
         """
         _ave = float(sum(values)) / len(values)
-        _std = math.sqrt(float(
-            sum((value - _ave) ** 2 for value in values)) / len(values))
+        _std = math.sqrt(float(sum((value - _ave) ** 2 for value in values)) /
+                         len(values))
         return _ave, _std
 
     # Make sure individuals are sorted
@@ -652,7 +654,7 @@ def print_stats(generation, individuals):
     ave_depth, std_depth = get_ave_and_std(depth_values)
     # Print the statistics
     print(
-        "Gen:%d fit_ave:%.2f+-%.3f size_ave:%.2f+-%.3f "
+        "Generation:%d fit_ave:%.2f+-%.3f size_ave:%.2f+-%.3f "
         "depth_ave:%.2f+-%.3f max_size:%d max_depth:%d max_fit:%f "
         "best_solution:%s" %
         (generation,
@@ -661,6 +663,7 @@ def print_stats(generation, individuals):
          ave_depth, std_depth,
          max(size_values), max(depth_values), max(fitness_values),
          individuals[0]))
+    print(display_tree(individuals[0]["genome"]))
 
 
 def subtree_mutation(individual, param):
@@ -1066,7 +1069,7 @@ def main():
 
 def out_of_sample_test(individual, fitness_cases, targets, symbols):
     """
-    Out-of-sample test on an individual solution
+    Out-of-sample test on an individual solution.
 
     :param individual: Solution to test on data
     :type individual: dict
@@ -1079,6 +1082,93 @@ def out_of_sample_test(individual, fitness_cases, targets, symbols):
     """
     evaluate_individual(individual, fitness_cases, targets, symbols)
     print("Best solution on test data:" + str(individual))
+    print(display_tree(individual["genome"]))
+
+
+def stack_str_blocks(blocks):
+    """
+    Takes a list of multiline strings, and stacks them horizontally. Edited from
+    http://stackoverflow.com/questions/15675261/displaying-a-tree-in-ascii
+    :param node: Block
+    :type node: list
+    :return: Block string
+    :rtype str:
+    """
+    builder = []
+    block_lens = []
+    for block in blocks:
+        try:
+            _len = block.index("\n")
+        except ValueError:
+            _len = len(block)
+        block_lens.append(_len)
+
+    split_blocks = [bl.split('\n') for bl in blocks]
+
+    for line_list in itertools.izip_longest(*split_blocks, fillvalue=None):
+        for i, line in enumerate(line_list):
+            if line is None:
+                builder.append(' ' * block_lens[i])
+            else:
+                builder.append(line)
+            if i != len(line_list) - 1:
+                builder.append(' ')  # Padding
+        builder.append('\n')
+
+    return ''.join(builder[:-1])
+
+
+def display_tree(node):
+    """
+    Return a tree as an ascii string. Edited from
+    http://stackoverflow.com/questions/15675261/displaying-a-tree-in-ascii
+    :param node: Tree node
+    :type node: list
+    :return: ascii string of tree
+    :rtype str:
+    """
+    if len(node) == 1:
+        return node[0]
+    elif len(node) == 3:
+        child_strs = [display_tree(node[1]), #display_tree(node[0]),
+                      display_tree(node[2])]
+    else:
+        raise
+
+    child_widths = []
+    for _str in child_strs:
+        try:
+            _len = _str.index("\n")
+        except ValueError:
+            _len = len(_str)
+        child_widths.append(_len)
+
+    # How wide is this block?
+    display_width = max(len(node[0]),
+                        sum(child_widths) + len(child_widths) - 1)
+
+    # Determines midpoints of child blocks
+    child_midpoints = []
+    child_end = 0
+    for width in child_widths:
+        child_midpoints.append(child_end + (width // 2))
+        child_end += width + 1
+
+    # Builds up the brace, using the child midpoints
+    brace_builder = []
+    for i in xrange(display_width):
+        if i < child_midpoints[0] or i > child_midpoints[-1]:
+            brace_builder.append(' ')
+        elif i in child_midpoints:
+            brace_builder.append('+')
+        else:
+            brace_builder.append('-')
+    brace = ''.join(brace_builder)
+
+    name_str = '{:^{}}'.format(node[0], display_width)
+    below = stack_str_blocks(child_strs)
+
+    return name_str + '\n' + brace + '\n' + below
 
 
 if __name__ == '__main__':
