@@ -39,8 +39,6 @@ teaching.
 The design is supposed to be simple, self contained and use core python
 libraries.
 
-See `oop_pony_gp.py` for a object orientated implementation.
-
 
 Genetic Programming
 ===================
