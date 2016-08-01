@@ -969,41 +969,64 @@ def parse_arguments():
     parser = optparse.OptionParser()
     # Population size
     parser.add_option("-p", "--population_size", type=int, default=80,
-                      dest="population_size", help="population size")
+                      dest="population_size",
+                      help="Population size is the number of individual "
+                           "solutions")
     # Size of an individual
     parser.add_option("-m", "--max_depth", type=int, default=3,
-                      dest="max_depth", help="Max depth of tree")
+                      dest="max_depth",
+                      help="Max depth of tree. Partly determines the search "
+                           "space of the solutions")
     # Number of elites, i.e. the top solution from the old population
     # transferred to the new population
     parser.add_option("-e", "--elite_size", type=int, default=2,
-                      dest="elite_size", help="elite size")
+                      dest="elite_size",
+                      help="Elite size is the number of best individual "
+                           "solutions that are preserved between generations")
     # Generations is the number of times the EA will iterate the search loop
     parser.add_option("-g", "--generations", type=int, default=20,
-                      dest="generations", help="number of generations")
+                      dest="generations",
+                      help="Number of generations. The number of iterations "
+                           "of the search loop.")
     # Tournament size
     parser.add_option("--ts", "--tournament_size", type=int, default=3,
-                      dest="tournament_size", help="tournament size")
-    # Random seed. Used to allow replication of runs of the EA. The search is
-    # stochastic and and replication of the results can be guaranteed by using
-    # the same random seed
+                      dest="tournament_size",
+                      help="Tournament size. The number of individual "
+                           "solutions that are compared when determining "
+                           "which solutions are inserted into the next "
+                           "generation(iteration) of the search loop")
+    # Random seed.
     parser.add_option("-s", "--seed", type=int, default=0,
-                      dest="seed", help="Random seed")
+                      dest="seed",
+                      help="Random seed. For replication of runs of the EA. "
+                           "The search is stochastic and and replication of "
+                           "the results are guaranteed the random seed")
     # Probability of crossover
     parser.add_option("--cp", "--crossover_probability", type=float,
                       dest="crossover_probability",
-                      default=0.8, help="crossover probability")
+                      default=0.8,
+                      help="Crossover probability, [0.0,1.0]. The probability "
+                           "of two individual solutions to be varied by the "
+                           "crossover operator")
     # Probability of mutation
     parser.add_option("--mp", "--mutation_probability", type=float,
                       dest="mutation_probability",
-                      default=0.2, help="mutation probability")
+                      default=0.2,
+                      help="Mutation probability, [0.0, 1.0]. The probability "
+                           "of an individual solutions to be varied by the "
+                           "mutation operator")
     # Fitness case file
     parser.add_option("--fc", "--fitness_cases", default="fitness_cases.csv",
                       dest="fitness_cases",
-                      help="fitness cases file")
+                      help="Fitness cases filename. The exemplars of input and "
+                           "the corresponding out put used to train and test "
+                           "individual solutions")
     # Test-training data split
     parser.add_option("--tts", "--test_train_split", type=float, default=0.7,
                       dest="test_train_split",
-                      help="test-train data split")
+                      help="Test-train data split, [0.0,1.0]. The ratio of "
+                           "fitness cases used for trainging individual "
+                           "solutions")
     # Parse the command line arguments
     options, args = parser.parse_args()
     return options
