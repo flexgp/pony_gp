@@ -4,7 +4,7 @@ the GP algorithm works. The intended use is for teaching. The aim is to allow
 the developer to quickly start using and developing. The design is supposed 
 to be simple, self contained and use core python libraries. 
 
-#Run
+# Run
 
 Find a equation for the input given an output.
 
@@ -15,11 +15,11 @@ python pony_gp.py
 The input with their respective output is in the file `fitness_case.csv`. The 
 exemplars are generated from `y = x0^2 + x1^2` from range `[-5,5]`
 
-##Requirements
+## Requirements
 
 Python 2.7
 
-##Usage
+## Usage
 
 ```
 Usage: pony_gp.py [options]
@@ -62,6 +62,6 @@ Options:
                         cases used for trainging individual solutions
 ```             
 
-##Output
+## Output
                       
 
