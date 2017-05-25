@@ -883,7 +883,8 @@ def get_symbols():
     """
 
     # Dictionary of symbols and their arity
-    arities = {  #"1": 0,
+    arities = {
+        "1": 0,
         "x0": 0,
         "x1": 0,
         "+": 2,
