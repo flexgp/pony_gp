@@ -1,5 +1,3 @@
-#! /usr/env python
-
 # The MIT License (MIT)
 
 # Copyright (c) 2013, 2014, 2015, 2016 Erik Hemberg, ALFA Group
@@ -81,7 +79,7 @@ The parameters for Pony GP are in a dictionary.
 .. codeauthor:: Erik Hemberg <hembergerik@csail.mit.edu>
 
 """
-DEFAULT_FITNESS = -sys.maxint
+DEFAULT_FITNESS = -float("inf")
 
 
 def append_node(node, symbol):
@@ -848,14 +846,14 @@ def parse_exemplars(file_name):
         reader = csv.reader(in_file, delimiter=',')
 
         # Read the header
-        headers = reader.next()
+        headers = reader.__next__()
 
         # Store fitness cases and their target values
         fitness_cases = []
         targets = []
         for row in reader:
             # Parse the columns to floats and append to fitness cases
-            fitness_cases.append(map(float, row[:-1]))
+            fitness_cases.append(list(map(float, row[:-1])))
             # The last column is the target
             targets.append(float(row[-1]))
 
@@ -926,7 +924,7 @@ def get_test_and_train_data(fitness_cases_file, test_train_split):
     exemplars, targets = parse_exemplars(fitness_cases_file)
     split_idx = int(math.floor(len(exemplars) * test_train_split))
     # Randomize
-    idx = range(0, len(exemplars))
+    idx = list(range(0, len(exemplars)))
     random.shuffle(idx)
     training_cases = []
     training_targets = []

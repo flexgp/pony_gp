@@ -17,7 +17,7 @@ exemplars are generated from `y = x0^2 + x1^2` from range `[-5,5]`
 
 ## Requirements
 
-Python 2.7
+Python 3
 
 ## Usage
 
