@@ -22,7 +22,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import csv
-import optparse
+import argparse
 
 import random
 import math
@@ -956,9 +956,9 @@ def parse_arguments():
     :rtype: dict
     """
     # Command line arguments
-    parser = optparse.OptionParser()
+    parser = argparse.ArgumentParser()
     # Population size
-    parser.add_option(
+    parser.add_argument(
         "-p",
         "--population_size",
         type=int,
@@ -967,7 +967,7 @@ def parse_arguments():
         help="Population size is the number of individual "
         "solutions")
     # Size of an individual
-    parser.add_option(
+    parser.add_argument(
         "-m",
         "--max_depth",
         type=int,
@@ -977,7 +977,7 @@ def parse_arguments():
         "space of the solutions")
     # Number of elites, i.e. the top solution from the old population
     # transferred to the new population
-    parser.add_option(
+    parser.add_argument(
         "-e",
         "--elite_size",
         type=int,
@@ -986,7 +986,7 @@ def parse_arguments():
         help="Elite size is the number of best individual "
         "solutions that are preserved between generations")
     # Generations is the number of times the EA will iterate the search loop
-    parser.add_option(
+    parser.add_argument(
         "-g",
         "--generations",
         type=int,
@@ -995,7 +995,7 @@ def parse_arguments():
         help="Number of generations. The number of iterations "
         "of the search loop.")
     # Tournament size
-    parser.add_option(
+    parser.add_argument(
         "--ts",
         "--tournament_size",
         type=int,
@@ -1006,7 +1006,7 @@ def parse_arguments():
         "which solutions are inserted into the next "
         "generation(iteration) of the search loop")
     # Random seed.
-    parser.add_option(
+    parser.add_argument(
         "-s",
         "--seed",
         type=int,
@@ -1016,7 +1016,7 @@ def parse_arguments():
         "The search is stochastic and and replication of "
         "the results are guaranteed the random seed")
     # Probability of crossover
-    parser.add_option(
+    parser.add_argument(
         "--cp",
         "--crossover_probability",
         type=float,
@@ -1026,7 +1026,7 @@ def parse_arguments():
         "of two individual solutions to be varied by the "
         "crossover operator")
     # Probability of mutation
-    parser.add_option(
+    parser.add_argument(
         "--mp",
         "--mutation_probability",
         type=float,
@@ -1036,7 +1036,7 @@ def parse_arguments():
         "of an individual solutions to be varied by the "
         "mutation operator")
     # Fitness case file
-    parser.add_option(
+    parser.add_argument(
         "--fc",
         "--fitness_cases",
         default="fitness_cases.csv",
@@ -1045,7 +1045,7 @@ def parse_arguments():
         "the corresponding out put used to train and test "
         "individual solutions")
     # Test-training data split
-    parser.add_option(
+    parser.add_argument(
         "--tts",
         "--test_train_split",
         type=float,
@@ -1055,8 +1055,8 @@ def parse_arguments():
         "fitness cases used for trainging individual "
         "solutions")
     # Parse the command line arguments
-    options, args = parser.parse_args()
-    return options
+    arguments, args = parser.parse_args()
+    return arguments
 
 
 def main():
