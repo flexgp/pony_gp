@@ -79,9 +79,9 @@ Namespace(crossover_probability= default crossover probability, elite_size= defa
          'terminals': [list of terminals(functions that have an arity of 0)], 
          'functions': [list of function sybols]}
 
-#Individual/Tree Statistics
-Initial tree nr:tree number nodes: amount of nodes or different symbols in the tree
-max_depth: max depth of tree(refer to usage): tree generated
+#Individual Statistics
+Initial individual nr:individual number nodes: amount of nodes or different symbols in the individual
+max_depth: max depth of individual(refer to usage): individual generated
 
 #Generation Statistics
 Generation:generation number fit_ave:average fitness of the generation 
