@@ -1079,7 +1079,7 @@ def parse_arguments():#dictionary of all the paramaters used, their fefault valu
     return args
 
 
-def main():#
+def main():#gives the best solution out of train data
     """Search. Evaluate best solution on out-of-sample data"""
 
     args = parse_arguments()
@@ -1111,7 +1111,7 @@ def main():#
                        param["symbols"])
 
 
-def out_of_sample_test(individual, fitness_cases, targets, symbols):
+def out_of_sample_test(individual, fitness_cases, targets, symbols):#gives the best solution out of test data
     """
     Out-of-sample test on an individual solution.
 
