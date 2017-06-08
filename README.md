@@ -63,6 +63,7 @@ Arguments:
 ```             
 
 ## Output
+Keep running until fitness for train data and test data reaches approximately 0.
 ```
 #Statistics on Data
 Reading: csv file containing input and output data for program to execute 
@@ -94,4 +95,3 @@ Best solution on train data:{'genome': individual formula/tree, 'fitness': fitne
 Best solution on test data:{'genome':individual formula/tree, 'fitness':fitness of genome}
 
 ``` 
-Keep running until fitness for train data and test data reaches approximately 0.
