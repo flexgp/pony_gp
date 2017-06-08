@@ -100,8 +100,8 @@ def append_node(node, symbol):#creates a list of all the symbols, and appends it
     return new_node
 
 
-def grow(node, depth, max_depth, full, symbols):#gets the symbols list and interates arity times for each respective symbol
-                                                #generates new nodes consisting og new sybols through the random symbol function
+def grow(node, depth, max_depth, full, symbols):#gets the symbols list and iterates arity times for each respective symbol
+                                                #generates new nodes consisting of new sybols through the random symbol function
     """
     Recursively grow a node to max depth in a pre-order, i.e. depth-first
     left-to-right traversal.
