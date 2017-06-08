@@ -21,14 +21,14 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import csv
-import argparse
+import csv #databases
+import argparse #user-friendly command line interface
 
 import random
 import math
 import copy
-import sys
-import itertools
+import sys #makes communication with interpreter easier
+import itertools#iterator functions for efficient looping
 """
 
 Implementation of Genetic Programming(GP), the purpose of this code is
@@ -79,10 +79,10 @@ The parameters for Pony GP are in a dictionary.
 .. codeauthor:: Erik Hemberg <hembergerik@csail.mit.edu>
 
 """
-DEFAULT_FITNESS = -float("inf")
+DEFAULT_FITNESS = -float("inf")#- because of residual squared
 
 
-def append_node(node, symbol):
+def append_node(node, symbol):#creates a list of all the symbols, and appends it to the node(assigning symbols to nodes)
     """
     Return the appended node. Append a symbol to the node.
 
@@ -100,7 +100,8 @@ def append_node(node, symbol):
     return new_node
 
 
-def grow(node, depth, max_depth, full, symbols):
+def grow(node, depth, max_depth, full, symbols):#gets the symbols list and interates arity times for each respective symbol
+                                                #generates new nodes consisting og new sybols through the random symbol function
     """
     Recursively grow a node to max depth in a pre-order, i.e. depth-first
     left-to-right traversal.
@@ -128,12 +129,12 @@ def grow(node, depth, max_depth, full, symbols):
         # Call grow with the child node as the current node
         grow(new_node, depth + 1, max_depth, full, symbols)
 
-        assert len(node) == (_ + 2), len(node)
+        assert len(node) == (_ + 2), len(node)#debugging
 
-    assert depth <= max_depth, "%d %d" % (depth, max_depth)
+    assert depth <= max_depth, "%d %d" % (depth, max_depth)#debugging
 
 
-def get_children(node):
+def get_children(node):#returns child nodes(all nodes except root node)
     """
     Return the children of the node. The children are all the elements of the
     except the first
@@ -146,7 +147,8 @@ def get_children(node):
     return node[1:]
 
 
-def get_number_of_nodes(root, cnt):
+def get_number_of_nodes(root, cnt):#counts total number of nodes in a tree
+                                   #uses count child nodes and adds one to the beginning to account for the root node
     """
     Return the number of nodes in the tree. A recursive depth-first
     left-to-right search is done
@@ -170,7 +172,8 @@ def get_number_of_nodes(root, cnt):
     return cnt
 
 
-def get_node_at_index(root, idx):
+def get_node_at_index(root, idx):#Iterates over the tree until it finds the index, and returns the index's respective node
+                                 #Adds children to a stack and accounts for them as well
     """
     Return the node in the tree at a given index. The index is
     according to a depth-first left-to-right ordering.
@@ -208,7 +211,7 @@ def get_node_at_index(root, idx):
     return node
 
 
-def get_max_tree_depth(root, depth, max_tree_depth):
+def get_max_tree_depth(root, depth, max_tree_depth):#returns the depth of the tree by counting both parent and children nodes
     """
     Return the max depth of the tree. Recursively traverse the tree
 
@@ -240,7 +243,7 @@ def get_max_tree_depth(root, depth, max_tree_depth):
     return max_tree_depth
 
 
-def get_depth_from_index(node, idx, node_idx, depth, idx_depth=None):
+def get_depth_from_index(node, idx, node_idx, depth, idx_depth=None):#returns the depth of a node at a respective index
     """
     Return the depth of a node based on the index. The index is based on
     depth-first left-to-right traversal.
@@ -279,7 +282,7 @@ def get_depth_from_index(node, idx, node_idx, depth, idx_depth=None):
     return idx_depth, idx
 
 
-def replace_subtree(new_subtree, old_subtree):
+def replace_subtree(new_subtree, old_subtree):#deletes old subtree, and replaces it by appending the nodes of new_subtree in it
     """
     Replace a subtree.
 
@@ -296,7 +299,8 @@ def replace_subtree(new_subtree, old_subtree):
         old_subtree.append(copy.deepcopy(node))
 
 
-def find_and_replace_symbol(root, symbol, node_idx, idx):
+def find_and_replace_symbol(root, symbol, node_idx, idx):#finds the desired index for a node 
+                                                         #places that symbol on the root node
     """
     Returns the current index and replaces the root symbol with another symbol
     at the given index. The index is based on depth-first left-to-right
@@ -330,7 +334,10 @@ def find_and_replace_symbol(root, symbol, node_idx, idx):
     return idx
 
 
-def get_random_symbol(depth, max_depth, symbols, full=False):
+def get_random_symbol(depth, max_depth, symbols, full=False):#checks to see if tree has reached its maximum depth
+                                                             #returns random terminal if max depth has been reached and 50% of the time
+                                                             #returns random function 50% of the time if max depth hasn't been reached
+                                                             
     """
     Return a randomly chosen symbol. The depth determines if a terminal
     must be chosen. If `full` is specified a function will be chosen
@@ -368,7 +375,8 @@ def get_random_symbol(depth, max_depth, symbols, full=False):
     return symbol
 
 
-def sort_population(individuals):
+def sort_population(individuals):#returns puts indivual elements into fitness function and sorts fitness in descending order
+                                 #best fit is first and least fit is last
     """
     Return a list sorted on the fitness value of the individuals in
     the population. Descending order.
@@ -387,7 +395,9 @@ def sort_population(individuals):
     return individuals
 
 
-def evaluate_individual(individual, fitness_cases, targets, symbols=None):
+def evaluate_individual(individual, fitness_cases, targets, symbols=None):#uses a fitness model(residual^2)
+                                                                          #calculates the mean fitness for each data point for each case
+                                                                          #adds negative, since squaring would mean going back to positive
     """
     Evaluate fitness based on fitness cases and target values. Fitness
     cases are a set of exemplars (input and output points) by
@@ -425,7 +435,7 @@ def evaluate_individual(individual, fitness_cases, targets, symbols=None):
     assert individual['fitness'] <= 0
 
 
-def evaluate(node, case):
+def evaluate(node, case):#Evaluates nodes using either '+','-','*','/', a variable, or a constant
     """
     Evaluate a node recursively. The node's symbol string is evaluated.
 
@@ -470,7 +480,10 @@ def evaluate(node, case):
         return float(symbol)
 
 
-def initialize_population(param):
+def initialize_population(param):#ramped hald-half initialization(the grow and full method are used half and half to generate nodes)
+                                 #full happens when max depth is reached and then terminals start
+                                 #grow happens when either terminals or symbols are ejected, so max depth is not necessarily reached
+                                 #intiialize indivual to give its tree path and its fitness
     """
     Ramped half-half initialization. The individuals in the
     population are initialized using the grow or the full method for
@@ -508,7 +521,7 @@ def initialize_population(param):
     return individuals
 
 
-def evaluate_fitness(individuals, param, cache):
+def evaluate_fitness(individuals, param, cache):#evaluates fitness of each individual function if it hasn't already been given
     """
     Evaluation each individual of the population.
     Uses a simple cache for reducing number of evaluations of individuals.
