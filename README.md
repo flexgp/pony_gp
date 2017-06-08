@@ -24,7 +24,7 @@ Python 3
 ```
 Usage: pony_gp.py [options]
 
-Options:
+Arguments:
   -h, --help            show this help message and exit
   -p POPULATION_SIZE, --population_size=POPULATION_SIZE
                         Population size is the number of individual solutions
@@ -63,5 +63,22 @@ Options:
 ```             
 
 ## Output
-                      
+```
+#Statistics on Data
+Reading: csv file containing input and output data for program to execute headers: [input(s), output] exemplars: amount of input and output points   
 
+#Refer to the above usage section to apprehend this line
+#Statistics on the different paramaters
+Namespace(crossover_probability= default crossover probability, elite_size= default elite_size, fitness_cases= default fitness_cases, generations= default genarations, max_depth=default mx_depth, mutation_probability= default mutation_probability, population_size= default pupoulation_size, seed= default seed, test_train_split= default test_train_split, tournament_size= default tournament_size) {'arities': {number of arguments each corresponding function takes}, 'terminals': [list of terminals(functions that have an arity of 0)], 'functions': [list of function sybols]}
+
+#Individual Statistics
+Initial tree nr:individual number nodes: amount of nodes or different symbols in the indivuidal max_depth: max deppth of tree(refer to usage): individual generated
+
+#Generation Statistics
+Generation:generation number fit_ave:average fitness of the generation size_ave:average number of nodes in the genearation amongst all data points depth_ave:average max_tree depth max_size: maximum number of nodes max_depth: maximum depth max_fit: maximum fitness best_solution:{'genome': individual formula generated, 'fitness': fitness of genome}
+
+#Best Solution Statistics
+Best solution on train data:{'genome': individual formula, 'fitness': fitness of genome}
+Best solution on test data:{'individual formula, 'fitness':fitness of genome}
+
+``` 
