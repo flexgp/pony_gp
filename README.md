@@ -94,3 +94,4 @@ Best solution on train data:{'genome': individual formula/tree, 'fitness': fitne
 Best solution on test data:{'genome':individual formula/tree, 'fitness':fitness of genome}
 
 ``` 
+Keep running until fitness reaches approximately 0.
