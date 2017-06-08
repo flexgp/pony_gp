@@ -960,6 +960,7 @@ def parse_arguments():
     # Population size
     parser.add_argument(
         "-p",
+        "-p",
         "--population_size",
         type=int,
         default=80,
@@ -1055,8 +1056,8 @@ def parse_arguments():
         "fitness cases used for trainging individual "
         "solutions")
     # Parse the command line arguments
-    arguments, args = parser.parse_args()
-    return arguments
+    args = parser.parse_args()
+    return args
 
 
 def main():
