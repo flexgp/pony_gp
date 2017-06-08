@@ -549,7 +549,7 @@ def evaluate_fitness(individuals, param, cache):#evaluates fitness of each indiv
         assert ind["fitness"] >= DEFAULT_FITNESS
 
 
-def search_loop(population, param):
+def search_loop(population, param):#returns the best fit population(best_ever) after going through iterations of mutations and crossovers
     """
     Return the best individual from the evolutionary search
     loop. Starting from the initial population.
@@ -616,7 +616,7 @@ def search_loop(population, param):
     return best_ever
 
 
-def print_stats(generation, individuals):
+def print_stats(generation, individuals):#prints out statistics for the population including a range of error(standard deviation)
     """
     Print the statistics for the generation and population.
 
@@ -626,7 +626,7 @@ def print_stats(generation, individuals):
     :type individuals: list
     """
 
-    def get_ave_and_std(values):
+    def get_ave_and_std(values):#formula for mean and standard deviation
         """
         Return average and standard deviation.
 
@@ -663,7 +663,7 @@ def print_stats(generation, individuals):
            individuals[0]))
 
 
-def point_mutation(individual, param):
+def point_mutation(individual, param):#muatates a node by replacing its symbol with a new random symbol of the same arity
     """
         Return a new individual by randomly picking a node and picking a new
         symbol with the same arity.
@@ -700,7 +700,7 @@ def point_mutation(individual, param):
     return new_individual
 
 
-def subtree_crossover(parent1, parent2, param):
+def subtree_crossover(parent1, parent2, param):#selects 2 random nodes from the parents and implements crossover by swapping their subtrees
     """
     Returns two individuals. The individuals are created by
     selecting two random nodes from the parents and swapping the
@@ -762,7 +762,9 @@ def subtree_crossover(parent1, parent2, param):
     return offsprings
 
 
-def tournament_selection(population, param):
+def tournament_selection(population, param):#appends best indivuals from a population to a list named "winners"
+                                            #competitors are chosen randomly and then sorted to determine winner
+                                            #there are as many tournaments as there are individuals
     """
     Return individuals from a population by drawing
     `tournament_size` competitors randomly and selecting the best
@@ -791,7 +793,10 @@ def tournament_selection(population, param):
     return winners
 
 
-def generational_replacement(new_population, old_population, param):
+def generational_replacement(new_population, old_population, param):#appends old population to new population after sorting it
+                                                                    #sorts new population based on fitness and deleted the worst cases
+                                                                    #worst cases=end cases
+                                                                    #the old generation is kept if it is better than the new population
     """
     Return new a population. The `elite_size` best old_population
     are appended to the new population. They are kept in the new
@@ -821,7 +826,7 @@ def generational_replacement(new_population, old_population, param):
     return new_population[:param["population_size"]]
 
 
-def run(param):
+def run(param):#return the best fit out of the population(new set of solutions after evolutionary search)
     """
     Return the best solution. Create an initial
     population. Perform an evolutionary search.
@@ -840,7 +845,7 @@ def run(param):
     return best_ever
 
 
-def parse_exemplars(file_name):
+def parse_exemplars(file_name):#divides the csv file into inputs and outputs as well as test and train data
     """
     Parse a CSV file. Parse the fitness case and split the data into
     Test and train data. In the fitness case file each row is an exemplar
@@ -876,7 +881,7 @@ def parse_exemplars(file_name):
     return fitness_cases, targets
 
 
-def get_symbols():
+def get_symbols():#returns a dictionary of symbols that are sorted into arities, terminals, and functions
     """
     Return a symbol dictionary. Helper method to keep the code clean. The nodes
     in a GP tree consists of different symbols. The symbols are either
@@ -922,7 +927,8 @@ def get_symbols():
     return {"arities": arities, "terminals": terminals, "functions": functions}
 
 
-def get_test_and_train_data(fitness_cases_file, test_train_split):
+def get_test_and_train_data(fitness_cases_file, test_train_split):#splits data into test and train
+                                                                  #the splitting point is randomly chosen
     """
     Return test and train data. Random selection from file containing data.
 
@@ -960,7 +966,7 @@ def get_test_and_train_data(fitness_cases_file, test_train_split):
     })
 
 
-def parse_arguments():
+def parse_arguments():#dictionary of all the paramaters used, their fefault values, and the definition of each parameter
     """
     Returns a dictionary of the default parameters, or the ones set by
     commandline arguments
@@ -1073,7 +1079,7 @@ def parse_arguments():
     return args
 
 
-def main():
+def main():#
     """Search. Evaluate best solution on out-of-sample data"""
 
     args = parse_arguments()
