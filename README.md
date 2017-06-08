@@ -78,19 +78,19 @@ Namespace(crossover_probability= default crossover probability, elite_size= defa
          'terminals': [list of terminals(functions that have an arity of 0)], 
          'functions': [list of function sybols]}
 
-#Individual Statistics
-Initial tree nr:individual number nodes: amount of nodes or different symbols in the indivuidal 
-max_depth: max deppth of tree(refer to usage): individual generated
+#Individual/Tree Statistics
+Initial tree nr:tree number nodes: amount of nodes or different symbols in the tree
+max_depth: max depth of tree(refer to usage): tree generated
 
 #Generation Statistics
 Generation:generation number fit_ave:average fitness of the generation 
            size_ave:average number of nodes in the genearation amongst all data points 
            depth_ave:average max_tree depth max_size: maximum number of nodes 
            max_depth: maximum depth max_fit: maximum fitness 
-           best_solution:{'genome': individual formula generated, 'fitness': fitness of genome}
+           best_solution:{'genome': individual formula/tree, 'fitness': fitness of genome}
 
 #Best Solution Statistics
-Best solution on train data:{'genome': individual formula, 'fitness': fitness of genome}
-Best solution on test data:{'individual formula, 'fitness':fitness of genome}
+Best solution on train data:{'genome': individual formula/tree, 'fitness': fitness of genome}
+Best solution on test data:{'genome':individual formula/tree, 'fitness':fitness of genome}
 
 ``` 
