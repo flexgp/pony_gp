@@ -100,11 +100,31 @@ def grow(node, depth, max_depth, full, symbols):
     # grow is called recursively in the loop. The loop iterates arity number
     # of times. The arity is given by the node symbol
     node_symbol = node[0]
+    # fetch_values = []
+    # fetch_values = symbols["arities"].keys()
+    # print(fetch_values)
     for _ in range(symbols["arities"][node_symbol]):
         # Get a random symbol
         symbol = get_random_symbol(depth, max_depth, symbols, full)
         # Create a child node and append it to the tree
+        #check if symbol arity is 0,if so grab randon number generator, generate value probablity if statement
+        # #HELPPPP
+        # print(symbols)
+        # for val in fetch_values:
+        #     if (symbols["arities"][val]) == 0:
+        #         y=symbols["arities"][val]
+        #         x = random.uniform(0, 1)
+        #         if (x > 0.5):
+        #             print("_______________")
+        #             y = random.choice(symbols["terminals"])
+        #             print(y)
+        #         else:
+        #             print("------------------")
+        #             y = random.randint(0, 20)
+        #             print(y)
+
         new_node = append_node(node, symbol)
+        #if statement
         # Call grow with the child node as the current node
         grow(new_node, depth + 1, max_depth, full, symbols)
 
@@ -402,11 +422,13 @@ def evaluate(node, case):
     """
 
     symbol = node[0]
+    # print(node)
     symbol = symbol.strip()
 
     # Identify the node symbol
     if symbol == "+":
         # Add the values of the node's children
+        #print(len(node))
         return evaluate(node[1], case) + evaluate(node[2], case)
 
     elif symbol == "-":
@@ -430,11 +452,17 @@ def evaluate(node, case):
     elif symbol.startswith("x"):
         # Get the variable value
         return case[int(symbol[1:])]
+    elif symbol== "sin":
+        return math.sin(evaluate(node[1], case))
+    elif symbol== "cos":
+        return math.cos(evaluate(node[1], case))
+    elif symbol== "tan":
+        return math.tan(evaluate(node[1], case))
 
     else:
         # The symbol is a constant
+        #change this part to random number
         return float(symbol)
-
 
 def initialize_population(param):
     """
@@ -629,6 +657,7 @@ def point_mutation(individual, param):
         "fitness": DEFAULT_FITNESS
     }
     # Check if mutation should be applied
+    #ERROR
     if random.random() < param["mutation_probability"]:
         # Pick random node
         end_node_idx = get_number_of_nodes(new_individual["genome"], 0) - 1
@@ -636,10 +665,21 @@ def point_mutation(individual, param):
         node = get_node_at_index(new_individual["genome"], node_idx)
         # Get a new symbol for the subtree
 
-        if param["symbols"]["arities"][node[0]] > 0:
+       # if node[0]=="sin" and param["symbols"]["arities"][node[0]] >1:
+        #    new_symbol = random.choice(param["symbols"]["functions"])
+        #WORKS IF I CHANGE IT TO 1
+        if param["symbols"]["arities"][node[0]] > 1:
             new_symbol = random.choice(param["symbols"]["functions"])
-        else:
+        elif param["symbols"]["arities"][node[0]] == 1:
+            #probability 50%number 50% header
             new_symbol = random.choice(param["symbols"]["terminals"])
+        else:
+            x = random.uniform(0, 1)
+            if (x > 0.5):
+                new_symbol = random.choice(param["symbols"]["terminals"])
+            else:
+                new_symbol = random.choice(param["symbols"]["terminals"])
+
 
         node[0] = new_symbol
 
@@ -741,6 +781,7 @@ def generational_replacement(new_population, old_population, param):
     Return new a population. The `elite_size` best old_population
     are appended to the new population. They are kept in the new
     population if they are better than the worst.
+    population if they are better than the worst.
     :param new_population: the new population
     :type new_population: list
     :param old_population: the old population
@@ -840,27 +881,19 @@ def get_symbols():
         reader = csv.reader(csvFile, delimiter=',')
        # Read the header
         headers = reader.__next__()
-        #print(headers)
         for val in headers[:-1]:
             arities[val] = 0
-
+        range_of_numbers = range(0, 3)
+        for count in range_of_numbers:
+            arities[str(count)]=0
         arities.update({"1": 0})
-        arities.update({"2":0})
+        arities.update({"sin":1})
+        arities.update({"cos":1})
+        arities.update({"tan":1})
         arities.update({"+": 2})
         arities.update({"*": 2})
         arities.update({"/": 2})
         arities.update({"-": 2})
-        print(arities)
-
-        # arities = {
-        #     "1": 0,
-        #     # "x0": 0,
-        #     # "x1": 0,
-        #     "+": 2,
-        #     "-": 2,
-        #     "*": 2,
-        #     "/": 2,
-        # }
 
     # List of terminal symbols
     terminals = []
@@ -869,6 +902,7 @@ def get_symbols():
 
     # Append symbols to terminals or functions by looping over the
     # arities items
+    print(arities)
     for key, value in arities.items():
         # A symbol with arity 0 is a terminal
         if value == 0:
@@ -878,6 +912,10 @@ def get_symbols():
             # Append the symbols to the functions list
             functions.append(key)
     return {"arities": arities, "terminals": terminals, "functions": functions}
+
+
+print("____")
+get_symbols()
 
 
 def get_test_and_train_data(fitness_cases_file, test_train_split):
@@ -915,7 +953,7 @@ def get_test_and_train_data(fitness_cases_file, test_train_split):
         "fitness_cases": training_cases,
         "targets": training_targets
     })
-
+# get_symbols()
 
 def parse_arguments():
     """
@@ -1040,7 +1078,6 @@ def main():
     test, train = get_test_and_train_data(fitness_cases_file, test_train_split)
     # Get the symbols
     symbols = get_symbols()
-    #print(symbols)
 
     # Print EA settings
     # print(args, symbols)
