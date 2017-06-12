@@ -108,21 +108,6 @@ def grow(node, depth, max_depth, full, symbols):
         symbol = get_random_symbol(depth, max_depth, symbols, full)
         # Create a child node and append it to the tree
         #check if symbol arity is 0,if so grab randon number generator, generate value probablity if statement
-        # #HELPPPP
-        # print(symbols)
-        # for val in fetch_values:
-        #     if (symbols["arities"][val]) == 0:
-        #         y=symbols["arities"][val]
-        #         x = random.uniform(0, 1)
-        #         if (x > 0.5):
-        #             print("_______________")
-        #             y = random.choice(symbols["terminals"])
-        #             print(y)
-        #         else:
-        #             print("------------------")
-        #             y = random.randint(0, 20)
-        #             print(y)
-
         new_node = append_node(node, symbol)
         #if statement
         # Call grow with the child node as the current node
@@ -670,16 +655,9 @@ def point_mutation(individual, param):
         #WORKS IF I CHANGE IT TO 1
         if param["symbols"]["arities"][node[0]] > 1:
             new_symbol = random.choice(param["symbols"]["functions"])
-        elif param["symbols"]["arities"][node[0]] == 1:
+        else:
             #probability 50%number 50% header
             new_symbol = random.choice(param["symbols"]["terminals"])
-        else:
-            x = random.uniform(0, 1)
-            if (x > 0.5):
-                new_symbol = random.choice(param["symbols"]["terminals"])
-            else:
-                new_symbol = random.choice(param["symbols"]["terminals"])
-
 
         node[0] = new_symbol
 
@@ -886,7 +864,7 @@ def get_symbols():
         range_of_numbers = range(0, 3)
         for count in range_of_numbers:
             arities[str(count)]=0
-        arities.update({"1": 0})
+        # arities.update({"1": 0})
         arities.update({"sin":1})
         arities.update({"cos":1})
         arities.update({"tan":1})
