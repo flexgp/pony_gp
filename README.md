@@ -65,6 +65,7 @@ Arguments:
 ## Output
 Keep running until fitness for train data and test data reaches approximately 0.
 ```
+Input: Answer yes or no to the three questions based on the type of genetic algorithm you would like to produce.
 #Statistics on Data
 Reading: csv file containing input and output data for program to execute 
          headers: [input(s), output] exemplars: amount of input and output points   
