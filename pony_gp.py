@@ -23,6 +23,7 @@
 # SOFTWARE.
 import csv
 import optparse
+import yaml
 
 import random
 import math
@@ -30,9 +31,9 @@ import copy
 import sys
 import itertools
 from test import *
-user_input= True
-user_input1=True
-user_input2=True
+user_input= False
+user_input1=False
+user_input2=False
 if user_input==True:
     answer = str(input("Please type yes or no. \nWould you would like your evaluation for an algorithm to contain trignometric functions(sin,cos,tan)?")).lower()
 if user_input1==True:
@@ -451,6 +452,17 @@ def evaluate(node, case):
         return (evaluate(node[1], case) or evaluate(node[2], case))
     elif symbol == "and":
         return (evaluate(node[1], case) and evaluate(node[2], case))
+    elif symbol == "if":
+        if (evaluate(node[1], case)):
+            return  evaluate(node[2], case)
+        else:
+            return  evaluate(node[3], case)
+    elif symbol == ">":
+        return (evaluate(node[1], case) > evaluate(node[2], case))
+    elif symbol == "<":
+        return (evaluate(node[1], case) < evaluate(node[2], case))
+    elif symbol == "=":
+        return (evaluate(node[1], case) == evaluate(node[2], case))
     else:
         # The symbol is a constant
         #change this part to random number
@@ -882,7 +894,7 @@ def get_symbols():
         headers = reader.__next__()
         for val in headers[:-1]:
             arities[val] = 0
-        constants = range(0, 3)
+        constants = range(0, 4)
         for constant in constants:
             arities[str(constant)]=0
 
@@ -896,7 +908,10 @@ def get_symbols():
         arities.update({"-": 2})
         arities.update({"or": 2})
         arities.update({"and": 2})
-
+        arities.update({"if": 3})
+        arities.update({">":2})
+        arities.update({"<": 2})
+        arities.update({"=": 2})
     #user input for allowing trignometric functions
     trig_values = False
     if (user_input == False):
@@ -923,7 +938,7 @@ def get_symbols():
             print("")
 
     # user input for allowing boolean functions
-    boolean_values = True
+    boolean_values = False
     if (user_input1 == False):
         if (boolean_values == False):
             if 'and' in arities:
@@ -942,7 +957,7 @@ def get_symbols():
                 del arities['or']
         else:
             print("")
-    linear_values = False
+    linear_values = True
     if (user_input1 == False):
         if (linear_values == False):
             if '+' in arities:
@@ -975,6 +990,8 @@ def get_symbols():
     functions1 = []
     #List of function symbols with arity 2
     functions2 = []
+    # List of function symbols with arity 2
+    functions3 = []
     #List of functions
     functions=[]
     # Append symbols to terminals or functions by looping over the
@@ -986,12 +1003,14 @@ def get_symbols():
             terminals.append(key)
         elif value == 1:
             functions1.append(key)
+        elif value == 2:
+            functions2.append(key)
         else:
             # Append the symbols to the functions list
-            functions2.append(key)
-        functions= functions1+functions2
+            functions3.append(key)
+        functions= functions1+functions2+functions3
 
-    return {"arities": arities, "terminals": terminals, "functions1": functions1, "functions2": functions2, "functions": functions}
+    return {"arities": arities, "terminals": terminals, "functions1": functions1, "functions2": functions2, "functions3": functions3, "functions": functions}
 
 
 
