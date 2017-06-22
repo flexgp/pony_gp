@@ -22,27 +22,16 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import csv
-import argparse
-
+import optparse
 
 import random
 import math
 import copy
 import sys
 import itertools
-from test import *
-user_input= False
-user_input1=False
-user_input2=False
-if user_input==True:
-    answer = str(input("Please type yes or no. \nWould you would like your evaluation for an algorithm to contain trignometric functions(sin,cos,tan)?")).lower()
-if user_input1==True:
-    answer1 = str(input("Please type yes or no. \nWould you would like your evaluation for an algorithm to contain boolean expressions(or, and)?")).lower()
-if user_input2==True:
-    answer2 = str(input("Please type yes or no. \nWould you would like your evaluation for an algorithm to contain linear functions(+,-,/,*)?")).lower()
 """
 Implementation of Genetic Programming(GP), the purpose of this code is
-to describe how the algorithm works. The intendned use is for
+to describe how the algorithm works. The intended use is for
 teaching.
 The design is supposed to be simple, self contained and use core python
 libraries.
@@ -75,7 +64,6 @@ The parameters for Pony GP are in a dictionary.
 DEFAULT_FITNESS = -float("inf")
 
 
-
 def append_node(node, symbol):
     """
     Return the appended node. Append a symbol to the node.
@@ -92,6 +80,7 @@ def append_node(node, symbol):
     node.append(new_node)
     return new_node
 
+
 def grow(node, depth, max_depth, full, symbols):
     """
     Recursively grow a node to max depth in a pre-order, i.e. depth-first
@@ -107,6 +96,7 @@ def grow(node, depth, max_depth, full, symbols):
     :param symbols: set of symbols to chose from
     :type symbols: dict
     """
+
     # grow is called recursively in the loop. The loop iterates arity number
     # of times. The arity is given by the node symbol
     node_symbol = node[0]
@@ -115,7 +105,6 @@ def grow(node, depth, max_depth, full, symbols):
         symbol = get_random_symbol(depth, max_depth, symbols, full)
         # Create a child node and append it to the tree
         new_node = append_node(node, symbol)
-        #if statement
         # Call grow with the child node as the current node
         grow(new_node, depth + 1, max_depth, full, symbols)
 
@@ -361,6 +350,7 @@ def sort_population(individuals):
     # Sort the individual elements on the fitness
     # Reverse for descending order
     individuals = sorted(individuals, key=lambda x: x['fitness'], reverse=True)
+
     return individuals
 
 
@@ -386,7 +376,6 @@ def evaluate_individual(individual, fitness_cases, targets, symbols=None):
     fitness = 0.0
     # Calculate the error between the output of the individual solution and
     # the target for each input
-    #try-catch-exception and how many errors happened
     for case, target in zip(fitness_cases, targets):
         # Get output from evaluation function
         output = evaluate(individual["genome"], case)
@@ -413,12 +402,9 @@ def evaluate(node, case):
     """
 
     symbol = node[0]
-    symbol = symbol.strip()
-
     # Identify the node symbol
     if symbol == "+":
         # Add the values of the node's children
-        #print(len(node))
         return evaluate(node[1], case) + evaluate(node[2], case)
 
     elif symbol == "-":
@@ -442,31 +428,11 @@ def evaluate(node, case):
     elif symbol.startswith("x"):
         # Get the variable value
         return case[int(symbol[1:])]
-    elif symbol== "sin":
-        return math.sin(evaluate(node[1], case))
-    elif symbol== "cos":
-        return math.cos(evaluate(node[1], case))
-    elif symbol== "tan":
-        return math.tan(evaluate(node[1], case))
-    elif symbol=="or":
-        return (evaluate(node[1], case) or evaluate(node[2], case))
-    elif symbol == "and":
-        return (evaluate(node[1], case) and evaluate(node[2], case))
-    elif symbol == "if":
-        if (evaluate(node[1], case)):
-            return  evaluate(node[2], case)
-        else:
-            return  evaluate(node[3], case)
-    elif symbol == ">":
-        return (evaluate(node[1], case) > evaluate(node[2], case))
-    elif symbol == "<":
-        return (evaluate(node[1], case) < evaluate(node[2], case))
-    elif symbol == "=":
-        return (evaluate(node[1], case) == evaluate(node[2], case))
+
     else:
         # The symbol is a constant
-        #change this part to random number
         return float(symbol)
+
 
 def initialize_population(param):
     """
@@ -589,7 +555,7 @@ def search_loop(population, param):
         sort_population(population)
         best_ever = population[0]
 
-        #Print the stats of the population
+        # Print the stats of the population
         print_stats(generation, population)
 
         # Increase the generation counter
@@ -661,37 +627,17 @@ def point_mutation(individual, param):
         "fitness": DEFAULT_FITNESS
     }
     # Check if mutation should be applied
-    #ERROR
     if random.random() < param["mutation_probability"]:
         # Pick random node
         end_node_idx = get_number_of_nodes(new_individual["genome"], 0) - 1
         node_idx = random.randint(0, end_node_idx)
         node = get_node_at_index(new_individual["genome"], node_idx)
-        if param["symbols"]["arities"][node[0]] ==2:
-            new_symbol = random.choice(param["symbols"]["functions2"])
-        elif param["symbols"]["arities"][node[0]] ==1:
-            new_symbol= random.choice(param["symbols"]["functions1"])
-        else:
-            # probability 50%number 50% header
-            new_symbol = random.choice(param["symbols"]["terminals"])
-
         # Get a new symbol for the subtree
 
-       # if node[0]=="sin" and param["symbols"]["arities"][node[0]] >1:
-        #    new_symbol = random.choice(param["symbols"]["functions"])
-        #WORKS IF I CHANGE IT TO 1
-        # while True:
-        #     try:
-        #         if param["symbols"]["arities"][node[0]] > 0:
-        #             new_symbol = random.choice(param["symbols"]["functions"])
-        #         else:
-        #             #probability 50%number 50% header
-        #             new_symbol = random.choice(param["symbols"]["terminals"])
-        #             break
-        #     except:
-        #         pass
-        #         print("Correct generations")
-
+        if param["symbols"]["arities"][node[0]] > 0:
+            new_symbol = random.choice(param["symbols"]["functions"])
+        else:
+            new_symbol = random.choice(param["symbols"]["terminals"])
 
         node[0] = new_symbol
 
@@ -793,7 +739,6 @@ def generational_replacement(new_population, old_population, param):
     Return new a population. The `elite_size` best old_population
     are appended to the new population. They are kept in the new
     population if they are better than the worst.
-    population if they are better than the worst.
     :param new_population: the new population
     :type new_population: list
     :param old_population: the old population
@@ -851,7 +796,7 @@ def parse_exemplars(file_name):
     # Open file
     with open(file_name, 'r') as in_file:
         # Create a CSV file reader
-        reader = csv.reader(in_file, skipinitialspace= True, delimiter=',')
+        reader = csv.reader(in_file, delimiter=',')
 
         # Read the header
         headers = reader.__next__()
@@ -867,7 +812,6 @@ def parse_exemplars(file_name):
 
         print("Reading: %s headers: %s exemplars:%d" %
               (file_name, headers, len(targets)))
-
 
     return fitness_cases, targets
 
@@ -887,113 +831,20 @@ def get_symbols():
     """
 
     # Dictionary of symbols and their arity
-    arities= {}
-    with open("fitness_cases.csv", "r") as csvFile:
-        reader = csv.reader(csvFile, delimiter=',')
-       # Read the header
-        headers = reader.__next__()
-        for val in headers[:-1]:
-            arities[val] = 0
-        constants = range(0, 4)
-        for constant in constants:
-            arities[str(constant)]=0
-
-        arities.update({"1": 0})
-        arities.update({"sin":1})
-        arities.update({"cos":1})
-        arities.update({"tan":1})
-        arities.update({"+": 2})
-        arities.update({"*": 2})
-        arities.update({"/": 2})
-        arities.update({"-": 2})
-        arities.update({"or": 2})
-        arities.update({"and": 2})
-        arities.update({"if": 3})
-        arities.update({">":2})
-        arities.update({"<": 2})
-        arities.update({"=": 2})
-    #user input for allowing trignometric functions
-    trig_values = False
-    if (user_input == False):
-        if (trig_values == False):
-            if 'sin' in arities:
-                del arities['sin']
-            if 'cos' in arities:
-                del arities['cos']
-            if 'tan' in arities:
-                del arities['tan']
-        else:
-            print("")
-    else:
-        if (answer == "yes".lower()):
-            print("")
-        elif (answer == "no".lower()):
-            if 'sin' in arities:
-                del arities['sin']
-            if 'cos' in arities:
-                del arities['cos']
-            if 'tan' in arities:
-                del arities['tan']
-        else:
-            print("")
-
-    # user input for allowing boolean functions
-    boolean_values = False
-    if (user_input1 == False):
-        if (boolean_values == False):
-            if 'and' in arities:
-                del arities['and']
-            if 'or' in arities:
-                del arities['or']
-        else:
-            print("")
-    else:
-        if (answer1 == "yes".lower()):
-            print("")
-        elif (answer1 == "no".lower()):
-            if 'and' in arities:
-                del arities['and']
-            if 'or' in arities:
-                del arities['or']
-        else:
-            print("")
-    linear_values = True
-    if (user_input1 == False):
-        if (linear_values == False):
-            if '+' in arities:
-                del arities['+']
-            if '-' in arities:
-                del arities['-']
-            if '*' in arities:
-                del arities['*']
-            if '/' in arities:
-                del arities['/']
-        else:
-            print("")
-    else:
-        if (answer2 == "yes".lower()):
-            print("")
-        elif (answer2 == "no".lower()):
-            if '+' in arities:
-                del arities['+']
-            if '-' in arities:
-                del arities['-']
-            if '*' in arities:
-                del arities['*']
-            if '/' in arities:
-                del arities['/']
-        else:
-            print("")
+    arities = {
+        "1": 0,
+        "x0": 0,
+        "x1": 0,
+        "+": 2,
+        "-": 2,
+        "*": 2,
+        "/": 2,
+    }
     # List of terminal symbols
     terminals = []
-    # List of function symbols with arity 1
-    functions1 = []
-    #List of function symbols with arity 2
-    functions2 = []
-    # List of function symbols with arity 2
-    functions3 = []
-    #List of functions
-    functions=[]
+    # List of function symbols
+    functions = []
+
     # Append symbols to terminals or functions by looping over the
     # arities items
     for key, value in arities.items():
@@ -1001,17 +852,11 @@ def get_symbols():
         if value == 0:
             # Append the symbols to the terminals list
             terminals.append(key)
-        elif value == 1:
-            functions1.append(key)
-        elif value == 2:
-            functions2.append(key)
         else:
             # Append the symbols to the functions list
-            functions3.append(key)
-        functions= functions1+functions2+functions3
+            functions.append(key)
 
-    return {"arities": arities, "terminals": terminals, "functions1": functions1, "functions2": functions2, "functions3": functions3, "functions": functions}
-
+    return {"arities": arities, "terminals": terminals, "functions": functions}
 
 
 def get_test_and_train_data(fitness_cases_file, test_train_split):
@@ -1050,6 +895,7 @@ def get_test_and_train_data(fitness_cases_file, test_train_split):
         "targets": training_targets
     })
 
+
 def parse_arguments():
     """
     Returns a dictionary of the default parameters, or the ones set by
@@ -1058,9 +904,9 @@ def parse_arguments():
     :rtype: dict
     """
     # Command line arguments
-    parser = argparse.ArgumentParser()
+    parser = optparse.OptionParser()
     # Population size
-    parser.add_argument(
+    parser.add_option(
         "-p",
         "--population_size",
         type=int,
@@ -1069,7 +915,7 @@ def parse_arguments():
         help="Population size is the number of individual "
         "solutions")
     # Size of an individual
-    parser.add_argument(
+    parser.add_option(
         "-m",
         "--max_depth",
         type=int,
@@ -1079,7 +925,7 @@ def parse_arguments():
         "space of the solutions")
     # Number of elites, i.e. the top solution from the old population
     # transferred to the new population
-    parser.add_argument(
+    parser.add_option(
         "-e",
         "--elite_size",
         type=int,
@@ -1088,7 +934,7 @@ def parse_arguments():
         help="Elite size is the number of best individual "
         "solutions that are preserved between generations")
     # Generations is the number of times the EA will iterate the search loop
-    parser.add_argument(
+    parser.add_option(
         "-g",
         "--generations",
         type=int,
@@ -1097,7 +943,7 @@ def parse_arguments():
         help="Number of generations. The number of iterations "
         "of the search loop.")
     # Tournament size
-    parser.add_argument(
+    parser.add_option(
         "--ts",
         "--tournament_size",
         type=int,
@@ -1108,7 +954,7 @@ def parse_arguments():
         "which solutions are inserted into the next "
         "generation(iteration) of the search loop")
     # Random seed.
-    parser.add_argument(
+    parser.add_option(
         "-s",
         "--seed",
         type=int,
@@ -1118,7 +964,7 @@ def parse_arguments():
         "The search is stochastic and and replication of "
         "the results are guaranteed the random seed")
     # Probability of crossover
-    parser.add_argument(
+    parser.add_option(
         "--cp",
         "--crossover_probability",
         type=float,
@@ -1128,7 +974,7 @@ def parse_arguments():
         "of two individual solutions to be varied by the "
         "crossover operator")
     # Probability of mutation
-    parser.add_argument(
+    parser.add_option(
         "--mp",
         "--mutation_probability",
         type=float,
@@ -1138,7 +984,7 @@ def parse_arguments():
         "of an individual solutions to be varied by the "
         "mutation operator")
     # Fitness case file
-    parser.add_argument(
+    parser.add_option(
         "--fc",
         "--fitness_cases",
         default="fitness_cases.csv",
@@ -1147,7 +993,7 @@ def parse_arguments():
         "the corresponding out put used to train and test "
         "individual solutions")
     # Test-training data split
-    parser.add_argument(
+    parser.add_option(
         "--tts",
         "--test_train_split",
         type=float,
@@ -1157,8 +1003,8 @@ def parse_arguments():
         "fitness cases used for trainging individual "
         "solutions")
     # Parse the command line arguments
-    args = parser.parse_args()
-    return args
+    options, args = parser.parse_args()
+    return options
 
 
 def main():
@@ -1174,9 +1020,8 @@ def main():
     # Get the symbols
     symbols = get_symbols()
 
-
     # Print EA settings
-    # print(args, symbols)
+    print(args, symbols)
 
     # Set random seed if not 0 is passed in as the seed
     if seed != 0:
