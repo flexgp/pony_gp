@@ -11,7 +11,7 @@ Find a equation for the input given an output.
 ```python
 python pony_gp.py
 ```
-
+If you wish to, change the paramaters from the 'configuration.yml' file to your desired paramaters or allow it to remain at its default values.
 The input with their respective output is in the file `fitness_case.csv`. The 
 exemplars are generated from `y = x0+1 from range `[-5,5]`
 
