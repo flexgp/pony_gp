@@ -13,7 +13,7 @@ python pony_gp.py
 ```
 
 The input with their respective output is in the file `fitness_case.csv`. The 
-exemplars are generated from `y = x0^2 + x1^2` from range `[-5,5]`
+exemplars are generated from `y = x0+1 from range `[-5,5]`
 
 ## Requirements
 
@@ -86,16 +86,18 @@ Best solution on train data:{'genome': individual formula/tree, 'fitness': fitne
 Best solution on test data:{'genome':individual formula/tree, 'fitness':fitness of genome}
 
 ``` 
-Example:
+Example for the function y=x0+1:
 ``` 
-Reading: fitness_cases.csv headers: ['x0', 'y'] exemplars:19
+Reading: fitness_cases.csv headers: ['x0', 'y'] exemplars:5
 Initial tree nr:0 nodes:1 max_depth:0: ['x0']
-Initial tree nr:1 nodes:1 max_depth:0: ['1']
-Initial tree nr:2 nodes:7 max_depth:2: ['+', ['*', ['1'], ['x0']], ['+', ['1'], ['0']]]
-Initial tree nr:3 nodes:1 max_depth:0: ['0']
-Generation:0 fit_ave:-8.65+-8.647 size_ave:2.50+-2.598 depth_ave:0.50+-0.866 max_size:7 max_depth:2 max_fit:-0.000000 best_solution:{'genome': ['x0'], 'fitness': -1.0}
-Generation:1 fit_ave:-0.25+-0.433 size_ave:7.00+-0.000 depth_ave:2.00+-0.000 max_size:7 max_depth:2 max_fit:-0.000000 best_solution:{'genome': ['+', ['*', ['1'], ['x0']], ['+', ['1'], ['0']]], 'fitness': -0.0}
-Best solution on train data:{'genome': ['+', ['*', ['1'], ['x0']], ['+', ['1'], ['0']]], 'fitness': -0.0}
-Best solution on test data:{'genome': ['+', ['*', ['1'], ['x0']], ['+', ['1'], ['0']]], 'fitness': -0.0}
+Initial tree nr:1 nodes:3 max_depth:1: ['+', ['1'], ['x0']]
+Initial tree nr:2 nodes:1 max_depth:0: ['0']
+Initial tree nr:3 nodes:15 max_depth:3: ['/', ['/', ['*', ['x0'], ['1']], ['-', ['1'], ['x0']]], ['-', ['+', ['x0'], ['1']], ['+', ['1'], ['x0']]]]
+Initial tree nr:4 nodes:1 max_depth:0: ['1']
+Initial tree nr:5 nodes:1 max_depth:0: ['1']
+Generation:0 fit_ave:-7.44+-6.036 size_ave:3.67+-5.121 depth_ave:0.67+-1.106 max_size:15 max_depth:3 max_fit:-0.000000 best_solution:{'genome': ['x0'], 'fitness': -1.0}
+Generation:1 fit_ave:-11.83+-11.505 size_ave:2.67+-0.745 depth_ave:0.83+-0.373 max_size:3 max_depth:1 max_fit:-0.000000 best_solution:{'genome': ['+', ['1'], ['x0']], 'fitness': -0.0}
+Best solution on train data:{'genome': ['+', ['1'], ['x0']], 'fitness': -0.0}
+Best solution on test data:{'genome': ['+', ['1'], ['x0']], 'fitness': -0.0}
 ``` 
 
