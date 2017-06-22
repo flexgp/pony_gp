@@ -65,21 +65,11 @@ Arguments:
 ## Output
 Keep running until fitness for train data and test data reaches approximately 0.
 ```
-Input: Answer yes or no to the three questions based on the type of genetic algorithm you would like to produce.
 #Statistics on Data
 Reading: csv file containing input and output data for program to execute 
          headers: [input(s), output] exemplars: amount of input and output points   
 
 #Refer to the above usage section to apprehend this line
-#Statistics on the different paramaters
-Namespace(crossover_probability= default crossover probability, elite_size= default elite_size, 
-         fitness_cases= default fitness_cases, generations= default genarations, max_depth=default max_depth, 
-         mutation_probability= default mutation_probability, population_size= default pupoulation_size,
-         seed= default seed, test_train_split= default test_train_split, tournament_size= default tournament_size) 
-         {'arities': {number of arguments each corresponding function takes}, 
-         'terminals': [list of terminals(functions that have an arity of 0)], 
-         'functions': [list of function sybols]}
-
 #Individual Statistics
 Initial individual nr:individual number nodes: amount of nodes or different symbols in the individual
 max_depth: max depth of individual(refer to usage): individual generated
@@ -96,3 +86,16 @@ Best solution on train data:{'genome': individual formula/tree, 'fitness': fitne
 Best solution on test data:{'genome':individual formula/tree, 'fitness':fitness of genome}
 
 ``` 
+Example:
+``` 
+Reading: fitness_cases.csv headers: ['x0', 'y'] exemplars:19
+Initial tree nr:0 nodes:1 max_depth:0: ['x0']
+Initial tree nr:1 nodes:1 max_depth:0: ['1']
+Initial tree nr:2 nodes:7 max_depth:2: ['+', ['*', ['1'], ['x0']], ['+', ['1'], ['0']]]
+Initial tree nr:3 nodes:1 max_depth:0: ['0']
+Generation:0 fit_ave:-8.65+-8.647 size_ave:2.50+-2.598 depth_ave:0.50+-0.866 max_size:7 max_depth:2 max_fit:-0.000000 best_solution:{'genome': ['x0'], 'fitness': -1.0}
+Generation:1 fit_ave:-0.25+-0.433 size_ave:7.00+-0.000 depth_ave:2.00+-0.000 max_size:7 max_depth:2 max_fit:-0.000000 best_solution:{'genome': ['+', ['*', ['1'], ['x0']], ['+', ['1'], ['0']]], 'fitness': -0.0}
+Best solution on train data:{'genome': ['+', ['*', ['1'], ['x0']], ['+', ['1'], ['0']]], 'fitness': -0.0}
+Best solution on test data:{'genome': ['+', ['*', ['1'], ['x0']], ['+', ['1'], ['0']]], 'fitness': -0.0}
+``` 
+
