@@ -1,0 +1,51 @@
+#All changes made by Mahek
+
+#all inputs and constants are automatically also set to terminals as they have 0 arity
+#comment any of the following terminals or functions if you DO NOT want it to be included in your evaluation
+#to comment, simply place an octothorp(hashtag)in front of the line you would like to comment
+arities:
+#    "1": 0
+#    "sin": 1
+#    "cos": 1
+#    "tan": 1
+    "+": 2
+    "*": 2
+    "/": 2
+    "-": 2
+#    "or": 2
+#    "and": 2
+#    ">": 2
+#    "<": 2
+#    "=": 2
+#    "if": 3
+
+#specify the range of constants you would like to employ in your evaluation
+#the program will use 0 to the number you specified
+rangeofnumbers: 1
+
+#specify the number of generations you would like to generate
+generation size: 2
+
+#specify the number of individuals(population) you would like to generate
+#make sure the population size is GREATER than the number of inputs
+population size: 6
+
+#specify the max depth of the tree
+max depth: 3
+
+#specify the number of best individuals that are preserved between generations
+elite size: 2
+
+#specify the number of individual solutions that are compared when determining which solutions are inserted into next generation of the search loop
+tournament size: 6
+
+#specify the random seed to ensure the replication of the results
+crossover probability: 0.8
+
+#probabilityof individual solutions to be varied by the mutation operator
+mutation probability: 0.2
+
+#name of file that has data(inputs and outputs) stored in it
+fitness case: "fitness_cases.csv"
+
+
