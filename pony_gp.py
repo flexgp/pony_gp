@@ -30,7 +30,11 @@ import math
 import copy
 import sys
 import itertools
-from yam import*
+from run_user_parameters import param
+from run_user_parameters import update_arities
+#import the arities dictionary
+arities= update_arities()
+
 """
 Implementation of Genetic Programming(GP), the purpose of this code is
 to describe how the algorithm works. The intendned use is for
@@ -389,7 +393,6 @@ def evaluate_individual(individual, fitness_cases, targets, symbols=None):
 
     assert individual['fitness'] <= 0
 
-#Changes within this function made by Mahek
 def evaluate(node, case):
     """
     Evaluate a node recursively. The node's symbol string is evaluated.
@@ -463,7 +466,6 @@ def evaluate(node, case):
     else:
         # The symbol is a constant
         return float(symbol)
-
 def initialize_population(param):
     """
     Ramped half-half initialization. The individuals in the
@@ -497,7 +499,6 @@ def initialize_population(param):
         print('Initial tree nr:%d nodes:%d max_depth:%d: %s' %
               (i, get_number_of_nodes(tree, 0), get_max_tree_depth(tree, 0, 0),
                tree))
-
     return individuals
 
 
@@ -638,7 +639,6 @@ def print_stats(generation, individuals):
            std_depth, max(size_values), max(depth_values), max(fitness_values),
            individuals[0]))
 
-#Changes within this function made by Mahek
 def point_mutation(individual, param):
     """
         Return a new individual by randomly picking a node and picking a new
@@ -850,7 +850,6 @@ def parse_exemplars(file_name):
 
     return fitness_cases, targets
 
-#Changes within this function made by Mahek
 def get_symbols():
     """
     Return a symbol dictionary. Helper method to keep the code clean. The nodes
@@ -927,8 +926,7 @@ def get_test_and_train_data(fitness_cases_file, test_train_split):
         "fitness_cases": training_cases,
         "targets": training_targets
     })
-
-#Changes within this function made by Mahek
+# parse_arities()
 def parse_arguments():
     """
     Returns a dictionary of the default parameters, or the ones set by
@@ -943,7 +941,7 @@ def parse_arguments():
         "-p",
         "--population_size",
         type=int,
-        default=population_size,
+        default= param["population_size"],
         dest="population_size",
         help="Population size is the number of individual "
         "solutions")
@@ -952,7 +950,7 @@ def parse_arguments():
         "-m",
         "--max_depth",
         type=int,
-        default= 6,
+        default= param["max_depth"],
         dest="max_depth",
         help="Max depth of tree. Partly determines the search "
         "space of the solutions")
@@ -962,7 +960,7 @@ def parse_arguments():
         "-e",
         "--elite_size",
         type=int,
-        default=2,
+        default=param["elite_size"],
         dest="elite_size",
         help="Elite size is the number of best individual "
         "solutions that are preserved between generations")
@@ -971,7 +969,7 @@ def parse_arguments():
         "-g",
         "--generations",
         type=int,
-        default=generation_size,
+        default= param["generations"],
         dest="generations",
         help="Number of generations. The number of iterations "
         "of the search loop.")
@@ -980,7 +978,7 @@ def parse_arguments():
         "--ts",
         "--tournament_size",
         type=int,
-        default=tournament_size,
+        default=param["tournament_size"],
         dest="tournament_size",
         help="Tournament size. The number of individual "
         "solutions that are compared when determining "
@@ -991,7 +989,7 @@ def parse_arguments():
         "-s",
         "--seed",
         type=int,
-        default=0,
+        default=param["seed"],
         dest="seed",
         help="Random seed. For replication of runs of the EA. "
         "The search is stochastic and and replication of "
@@ -1002,7 +1000,7 @@ def parse_arguments():
         "--crossover_probability",
         type=float,
         dest="crossover_probability",
-        default=crossover_probability,
+        default=param["crossover_probability"],
         help="Crossover probability, [0.0,1.0]. The probability "
         "of two individual solutions to be varied by the "
         "crossover operator")
@@ -1012,7 +1010,7 @@ def parse_arguments():
         "--mutation_probability",
         type=float,
         dest="mutation_probability",
-        default=mutation_probability,
+        default=param["mutation_probability"],
         help="Mutation probability, [0.0, 1.0]. The probability "
         "of an individual solutions to be varied by the "
         "mutation operator")
@@ -1020,7 +1018,7 @@ def parse_arguments():
     parser.add_argument(
         "--fc",
         "--fitness_cases",
-        default=fitness_case,
+        default=param["fitness_case"],
         dest="fitness_cases",
         help="Fitness cases filename. The exemplars of input and "
         "the corresponding out put used to train and test "
@@ -1062,13 +1060,13 @@ def main():
         random.seed(seed)
 
     # Get the namespace dictionary
-    param = vars(args)
     param["symbols"] = symbols
     param["fitness_cases"] = train["fitness_cases"]
     param["targets"] = train["targets"]
     best_ever = run(param)
     print("Best solution on train data:" + str(best_ever))
     # Test on out-of-sample data
+
     out_of_sample_test(best_ever, test["fitness_cases"], test["targets"],
                        param["symbols"])
 
