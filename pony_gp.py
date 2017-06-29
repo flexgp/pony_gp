@@ -29,15 +29,10 @@ import math
 import copy
 import sys
 import itertools
-from util import create_arities
-from util import create_param
-from util import get_config
+from util import get_param_and_arities
 
-# import the arities dictionary
-arities = create_arities(get_config())
-
-# import param dictionnary
-param = create_param()
+# create the param and arities dictionaries
+param, arities = get_param_and_arities()
 
 """
 Implementation of Genetic Programming(GP), the purpose of this code is
