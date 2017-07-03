@@ -856,7 +856,7 @@ def get_arities(param):
         headers = reader.__next__()
 
     # Remove comment symbol
-    headers = headers[1:]
+    headers[0] = headers[0][1:]
     # Input variables
     variables = headers[:-1]
     # Skip the 
@@ -864,8 +864,9 @@ def get_arities(param):
         arities[variable.strip()] = 0
 
     constants = param['constants']
-    for constant in constants:
-        arities[str(constant)] = 0
+    if constants:
+        for constant in constants:
+            arities[str(constant)] = 0
 
     return arities
 
