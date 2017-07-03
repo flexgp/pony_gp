@@ -7,7 +7,6 @@ import math
 import copy
 import sys
 import itertools
-
 """
 Implementation of Genetic Programming(GP), the purpose of this code is
 to describe how the algorithm works. The intended use is for
@@ -57,6 +56,7 @@ def append_node(node, symbol):
     # Create a list with the symbol and append it to the node
     new_node = [symbol]
     node.append(new_node)
+
     return new_node
 
 
@@ -329,6 +329,7 @@ def sort_population(individuals):
     # Sort the individual elements on the fitness
     # Reverse for descending order
     individuals = sorted(individuals, key=lambda x: x['fitness'], reverse=True)
+
     return individuals
 
 
@@ -447,6 +448,7 @@ def initialize_population(param):
         print('Initial tree nr:%d nodes:%d max_depth:%d: %s' %
               (i, get_number_of_nodes(tree, 0), get_max_tree_depth(tree, 0, 0),
                tree))
+
     return individuals
 
 
@@ -562,7 +564,7 @@ def print_stats(generation, individuals):
         """
         _ave = float(sum(values)) / len(values)
         _std = math.sqrt(
-            float(sum((value - _ave) ** 2 for value in values)) / len(values))
+            float(sum((value - _ave)**2 for value in values)) / len(values))
         return _ave, _std
 
     # Make sure individuals are sorted
@@ -616,7 +618,8 @@ def point_mutation(individual, param):
         elif param["symbols"]["arities"][node[0]] == 2:
             new_symbol = random.choice(param["symbols"]["functions"])
         else:
-            raise Exception("Unknown aritiy: {}".format(param["symbols"]["arities"][node[0]]))
+            raise Exception("Unknown aritiy: {}".format(param["symbols"][
+                "arities"][node[0]]))
 
         # Get a new symbol for the subtree
         node[0] = new_symbol
@@ -641,12 +644,12 @@ def subtree_crossover(parent1, parent2, param):
     """
     # Copy the parents to make offsprings
     offsprings = ({
-                      "genome": copy.deepcopy(parent1["genome"]),
-                      "fitness": DEFAULT_FITNESS
-                  }, {
-                      "genome": copy.deepcopy(parent2["genome"]),
-                      "fitness": DEFAULT_FITNESS
-                  })
+        "genome": copy.deepcopy(parent1["genome"]),
+        "fitness": DEFAULT_FITNESS
+    }, {
+        "genome": copy.deepcopy(parent2["genome"]),
+        "fitness": DEFAULT_FITNESS
+    })
 
     # Check if offspring will be crossed over
     if random.random() < param["crossover_probability"]:
@@ -855,11 +858,11 @@ def get_arities(param):
     # Remove comment symbol
     headers = headers[1:]
     # Input variables
-    variables = headers[:-1]        
+    variables = headers[:-1]
     # Skip the 
     for variable in variables:
         arities[variable.strip()] = 0
-        
+
     constants = param['constants']
     for constant in constants:
         arities[str(constant)] = 0
@@ -898,12 +901,12 @@ def get_test_and_train_data(fitness_cases_file, test_train_split):
         test_targets.append(targets[i])
 
     return ({
-                "fitness_cases": test_cases,
-                "targets": test_targets
-            }, {
-                "fitness_cases": training_cases,
-                "targets": training_targets
-            })
+        "fitness_cases": test_cases,
+        "targets": test_targets
+    }, {
+        "fitness_cases": training_cases,
+        "targets": training_targets
+    })
 
 
 def parse_arguments():
@@ -923,7 +926,7 @@ def parse_arguments():
         default=10,
         dest="population_size",
         help="Population size is the number of individual "
-             "solutions")
+        "solutions")
     # Size of an individual
     parser.add_argument(
         "-m",
@@ -932,7 +935,7 @@ def parse_arguments():
         default=3,
         dest="max_depth",
         help="Max depth of tree. Partly determines the search "
-             "space of the solutions")
+        "space of the solutions")
     # Number of elites, i.e. the top solution from the old population
     # transferred to the new population
     parser.add_argument(
@@ -942,7 +945,7 @@ def parse_arguments():
         default=2,
         dest="elite_size",
         help="Elite size is the number of best individual "
-             "solutions that are preserved between generations")
+        "solutions that are preserved between generations")
     # Generations is the number of times the EA will iterate the search loop
     parser.add_argument(
         "-g",
@@ -951,7 +954,7 @@ def parse_arguments():
         default=4,
         dest="generations",
         help="Number of generations. The number of iterations "
-             "of the search loop.")
+        "of the search loop.")
     # Tournament size
     parser.add_argument(
         "--ts",
@@ -960,9 +963,9 @@ def parse_arguments():
         default=2,
         dest="tournament_size",
         help="Tournament size. The number of individual "
-             "solutions that are compared when determining "
-             "which solutions are inserted into the next "
-             "generation(iteration) of the search loop")
+        "solutions that are compared when determining "
+        "which solutions are inserted into the next "
+        "generation(iteration) of the search loop")
     # Random seed.
     parser.add_argument(
         "-s",
@@ -971,8 +974,8 @@ def parse_arguments():
         default=0,
         dest="seed",
         help="Random seed. For replication of runs of the EA. "
-             "The search is stochastic and and replication of "
-             "the results are guaranteed the random seed")
+        "The search is stochastic and and replication of "
+        "the results are guaranteed the random seed")
     # Probability of crossover
     parser.add_argument(
         "--cp",
@@ -981,8 +984,8 @@ def parse_arguments():
         dest="crossover_probability",
         default=0.8,
         help="Crossover probability, [0.0,1.0]. The probability "
-             "of two individual solutions to be varied by the "
-             "crossover operator")
+        "of two individual solutions to be varied by the "
+        "crossover operator")
     # Probability of mutation
     parser.add_argument(
         "--mp",
@@ -991,8 +994,8 @@ def parse_arguments():
         dest="mutation_probability",
         default=0.1,
         help="Mutation probability, [0.0, 1.0]. The probability "
-             "of an individual solutions to be varied by the "
-             "mutation operator")
+        "of an individual solutions to be varied by the "
+        "mutation operator")
     # Fitness case file
     parser.add_argument(
         "--fc",
@@ -1000,8 +1003,8 @@ def parse_arguments():
         default="fitness_cases.csv",
         dest="fitness_cases",
         help="Fitness cases filename. The exemplars of input and "
-             "the corresponding out put used to train and test "
-             "individual solutions")
+        "the corresponding out put used to train and test "
+        "individual solutions")
     # Test-training data split
     parser.add_argument(
         "--tts",
@@ -1010,8 +1013,8 @@ def parse_arguments():
         default=0.7,
         dest="test_train_split",
         help="Test-train data split, [0.0,1.0]. The ratio of "
-             "fitness cases used for trainging individual "
-             "solutions")
+        "fitness cases used for trainging individual "
+        "solutions")
     # Config file
     parser.add_argument(
         "--config",
@@ -1022,7 +1025,7 @@ def parse_arguments():
     # Parse the command line arguments
     args = parser.parse_args()
     with open(args.config, 'r') as ymlfile:
-            param = yaml.load(ymlfile)
+        param = yaml.load(ymlfile)
 
     # Override config file values with CLI-args
     _args = vars(args)
