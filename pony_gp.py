@@ -5,14 +5,13 @@ import argparse
 import random
 import math
 import copy
-import sys
-import itertools
 """
 Implementation of Genetic Programming(GP), the purpose of this code is
 to describe how the algorithm works. The intended use is for
 teaching.
 The design is supposed to be simple, self contained and use core python
 libraries.
+
 Genetic Programming
 ===================
 An individual is a dictionary with two keys:
@@ -25,6 +24,7 @@ functions (internal nodes with arity > 0) or terminals (leaf nodes with arity
   - *arities* -- A dictionary where a key is a symbol and the value is the arity
   - *terminals* -- A list of strings(symbols) with arity 0
   - *functions* -- A list of strings(symbols) with arity > 0
+
 Fitness Function
 ----------------
 Find a symbolic expression (function) which yields the lowest error
@@ -34,9 +34,11 @@ output. The input data is split into test and training data. The
 training data is used to generate symbolic expressions and the test
 data is used to evaluate the out-of-sample performance of the
 evaluated expressions.
+
 Pony GP Parameters
 ------------------
 The parameters for Pony GP are in a dictionary.
+
 .. codeauthor:: Erik Hemberg <hembergerik@csail.mit.edu>
 """
 DEFAULT_FITNESS = -float("inf")
@@ -333,7 +335,7 @@ def sort_population(individuals):
     return individuals
 
 
-def evaluate_individual(individual, fitness_cases, targets, symbols=None):
+def evaluate_individual(individual, fitness_cases, targets):
     """
     Evaluate fitness based on fitness cases and target values. Fitness
     cases are a set of exemplars (input and output points) by
@@ -341,14 +343,13 @@ def evaluate_individual(individual, fitness_cases, targets, symbols=None):
     expression) and the target values.
     Evaluates and sets the fitness in an individual. Fitness is the
     negative mean square error(MSE).
+
     :param individual: Individual solution to evaluate
     :type individual: dict
     :param fitness_cases: Input for the evaluation
     :type fitness_cases: list
     :param targets: Output corresponding to the input
     :type targets: list
-    :param symbols: Symbols used in evaluation
-    :type symbols: dict
     """
 
     # Initial fitness value
@@ -386,7 +387,6 @@ def evaluate(node, case):
     # Identify the node symbol
     if symbol == "+":
         # Add the values of the node's children
-        # print(len(node))
         return evaluate(node[1], case) + evaluate(node[2], case)
 
     elif symbol == "-":
@@ -445,9 +445,10 @@ def initialize_population(param):
         individual = {"genome": tree, "fitness": DEFAULT_FITNESS}
         # Append the individual to the population
         individuals.append(individual)
-        print('Initial tree nr:%d nodes:%d max_depth:%d: %s' %
-              (i, get_number_of_nodes(tree, 0), get_max_tree_depth(tree, 0, 0),
-               tree))
+        if param["verbose"]:
+            print('Initial tree nr:{} nodes:{} max_depth:{} tree: {}'.format(
+                i, get_number_of_nodes(tree, 0),
+                get_max_tree_depth(tree, 0, 0), tree))
 
     return individuals
 
@@ -472,8 +473,7 @@ def evaluate_fitness(individuals, param, cache):
             ind["fitness"] = cache[key]
         else:
             # Execute the fitness function
-            evaluate_individual(ind, param["fitness_cases"], param["targets"],
-                                param["symbols"])
+            evaluate_individual(ind, param["fitness_cases"], param["targets"])
             cache[key] = ind["fitness"]
 
         assert ind["fitness"] >= DEFAULT_FITNESS
@@ -618,7 +618,7 @@ def point_mutation(individual, param):
         elif param["symbols"]["arities"][node[0]] == 2:
             new_symbol = random.choice(param["symbols"]["functions"])
         else:
-            raise Exception("Unknown aritiy: {}".format(param["symbols"][
+            raise Exception("Unknown arity: {}".format(param["symbols"][
                 "arities"][node[0]]))
 
         # Get a new symbol for the subtree
@@ -668,8 +668,7 @@ def subtree_crossover(parent1, parent2, param):
 
         # Make sure that the offspring is deep enough
         if (node_depths[0][1] + node_depths[1][0]) >= param["max_depth"] or \
-                        (node_depths[1][1] + node_depths[0][0]) >= param[
-                    "max_depth"]:
+                        (node_depths[1][1] + node_depths[0][0]) >= param["max_depth"]:
             return offsprings
 
         # Swap the nodes
@@ -682,8 +681,7 @@ def subtree_crossover(parent1, parent2, param):
         replace_subtree(tmp_offspring_1_node, xo_nodes[0])
 
         for offspring in offsprings:
-            assert get_max_tree_depth(offspring["genome"], 0, 0) \
-                   <= param["max_depth"]
+            assert get_max_tree_depth(offspring["genome"], 0, 0) <= param["max_depth"]
 
     # Return the offsprings
     return offsprings
@@ -1014,7 +1012,7 @@ def parse_arguments():
         default=0.7,
         dest="test_train_split",
         help="Test-train data split, [0.0,1.0]. The ratio of "
-        "fitness cases used for trainging individual "
+        "fitness cases used for training individual "
         "solutions")
     # Config file
     parser.add_argument(
@@ -1022,6 +1020,14 @@ def parse_arguments():
         type=str,
         required=True,
         help="Config file in YAML format. Overridden by CLI-arguments")
+    # Verbose
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        dest="verbose",
+        action='store_const',
+        const=True,
+        help="Verbose printing")
 
     # Parse the command line arguments
     args = parser.parse_args()
@@ -1062,27 +1068,27 @@ def main():
     param["symbols"] = symbols
     param["fitness_cases"] = train["fitness_cases"]
     param["targets"] = train["targets"]
+
+    # Run
     best_ever = run(param)
     print("Best solution on train data:" + str(best_ever))
     # Test on out-of-sample data
 
-    out_of_sample_test(best_ever, test["fitness_cases"], test["targets"],
-                       param["symbols"])
+    out_of_sample_test(best_ever, test["fitness_cases"], test["targets"])
 
 
-def out_of_sample_test(individual, fitness_cases, targets, symbols):
+def out_of_sample_test(individual, fitness_cases, targets):
     """
     Out-of-sample test on an individual solution.
+
     :param individual: Solution to test on data
     :type individual: dict
     :param fitness_cases: Input data used for testing
     :type fitness_cases: list
     :param targets: Target values of data
     :type targets: list
-    :param symbols: Symbols
-    :type symbols: dict
     """
-    evaluate_individual(individual, fitness_cases, targets, symbols)
+    evaluate_individual(individual, fitness_cases, targets)
     print("Best solution on test data:" + str(individual))
 
 
