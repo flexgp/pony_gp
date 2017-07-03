@@ -1,26 +1,4 @@
-# The MIT License (MIT)
-
-# Copyright (c) 2013, 2014, 2015, 2016 Erik Hemberg, ALFA Group
-
-# Permission is hereby granted, free of charge, to any person
-# obtaining a copy of this software and associated documentation files
-# (the "Software"), to deal in the Software without restriction,
-# including without limitation the rights to use, copy, modify, merge,
-# publish, distribute, sublicense, and/or sell copies of the Software,
-# and to permit persons to whom the Software is furnished to do so,
-# subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+import yaml
 import csv
 import argparse
 
@@ -29,14 +7,9 @@ import math
 import copy
 import sys
 import itertools
-from util import get_param_and_arities
-
-# create the param and arities dictionaries
-param, arities = get_param_and_arities()
-
 """
 Implementation of Genetic Programming(GP), the purpose of this code is
-to describe how the algorithm works. The intendned use is for
+to describe how the algorithm works. The intended use is for
 teaching.
 The design is supposed to be simple, self contained and use core python
 libraries.
@@ -83,6 +56,7 @@ def append_node(node, symbol):
     # Create a list with the symbol and append it to the node
     new_node = [symbol]
     node.append(new_node)
+
     return new_node
 
 
@@ -355,6 +329,7 @@ def sort_population(individuals):
     # Sort the individual elements on the fitness
     # Reverse for descending order
     individuals = sorted(individuals, key=lambda x: x['fitness'], reverse=True)
+
     return individuals
 
 
@@ -435,36 +410,6 @@ def evaluate(node, case):
     elif symbol.startswith("x"):
         # Get the variable value
         return case[int(symbol[1:])]
-    elif symbol == "sin":
-        # Evaluate the sin function of the value of the node's children
-        return math.sin(evaluate(node[1], case))
-    elif symbol == "cos":
-        # Evaluate the cos function of the value of the node's children
-        return math.cos(evaluate(node[1], case))
-    elif symbol == "tan":
-        # Evaluate the tan function of the vaue of the node's children
-        return math.tan(evaluate(node[1], case))
-    elif symbol == "or":
-        # Evaluate the or operator with the value of the node's children
-        return (evaluate(node[1], case) or evaluate(node[2], case))
-    elif symbol == "and":
-        # Evaluate the and operator with the value of the node's children
-        return (evaluate(node[1], case) and evaluate(node[2], case))
-    elif symbol == "if":
-        # Evaluate an if statement with the value of the node's children
-        if (evaluate(node[1], case)):
-            return evaluate(node[2], case)
-        else:
-            return evaluate(node[3], case)
-    elif symbol == ">":
-        # Determine which value of the node's children is greater given two nodes
-        return (evaluate(node[1], case) > evaluate(node[2], case))
-    elif symbol == "<":
-        # Determine which value of the node's children is smaller given two nodes
-        return (evaluate(node[1], case) < evaluate(node[2], case))
-    elif symbol == "=":
-        # Determine whether the values of the node's children are equal given two nodes
-        return (evaluate(node[1], case) == evaluate(node[2], case))
     else:
         # The symbol is a constant
         return float(symbol)
@@ -503,6 +448,7 @@ def initialize_population(param):
         print('Initial tree nr:%d nodes:%d max_depth:%d: %s' %
               (i, get_number_of_nodes(tree, 0), get_max_tree_depth(tree, 0, 0),
                tree))
+
     return individuals
 
 
@@ -618,7 +564,7 @@ def print_stats(generation, individuals):
         """
         _ave = float(sum(values)) / len(values)
         _std = math.sqrt(
-            float(sum((value - _ave) ** 2 for value in values)) / len(values))
+            float(sum((value - _ave)**2 for value in values)) / len(values))
         return _ave, _std
 
     # Make sure individuals are sorted
@@ -667,14 +613,13 @@ def point_mutation(individual, param):
         end_node_idx = get_number_of_nodes(new_individual["genome"], 0) - 1
         node_idx = random.randint(0, end_node_idx)
         node = get_node_at_index(new_individual["genome"], node_idx)
-        if param["symbols"]["arities"][node[0]] == 2:
-            new_symbol = random.choice(param["symbols"]["functions2"])
-        elif param["symbols"]["arities"][node[0]] == 1:
-            new_symbol = random.choice(param["symbols"]["functions1"])
-        elif param["symbols"]["arities"][node[0]] == 3:
-            new_symbol = random.choice(param["symbols"]["functions1"])
-        else:
+        if param["symbols"]["arities"][node[0]] == 0:
             new_symbol = random.choice(param["symbols"]["terminals"])
+        elif param["symbols"]["arities"][node[0]] == 2:
+            new_symbol = random.choice(param["symbols"]["functions"])
+        else:
+            raise Exception("Unknown aritiy: {}".format(param["symbols"][
+                "arities"][node[0]]))
 
         # Get a new symbol for the subtree
         node[0] = new_symbol
@@ -699,12 +644,12 @@ def subtree_crossover(parent1, parent2, param):
     """
     # Copy the parents to make offsprings
     offsprings = ({
-                      "genome": copy.deepcopy(parent1["genome"]),
-                      "fitness": DEFAULT_FITNESS
-                  }, {
-                      "genome": copy.deepcopy(parent2["genome"]),
-                      "fitness": DEFAULT_FITNESS
-                  })
+        "genome": copy.deepcopy(parent1["genome"]),
+        "fitness": DEFAULT_FITNESS
+    }, {
+        "genome": copy.deepcopy(parent2["genome"]),
+        "fitness": DEFAULT_FITNESS
+    })
 
     # Check if offspring will be crossed over
     if random.random() < param["crossover_probability"]:
@@ -855,28 +800,30 @@ def parse_exemplars(file_name):
     return fitness_cases, targets
 
 
-def get_symbols():
-    """
-    Return a symbol dictionary. Helper method to keep the code clean. The nodes
-    in a GP tree consists of different symbols. The symbols are either
-    functions (internal nodes with arity > 0) or terminals (leaf nodes with
-    arity = 0) The symbols is represented as a dictionary with the keys:
-    - *arities* -- A dictionary where a key is a symbol and the value is the
-     arity
-    - *terminals* -- A list of strings(symbols) with arity 0
-    - *functions* -- A list of strings(symbols) with arity > 0
+def get_symbols(arities):
+    """Return a symbol dictionary. Helper method to keep the code clean. 
+
+    The nodes in a GP tree consists of different symbols. The symbols
+    are either functions (internal nodes with arity > 0) or terminals
+    (leaf nodes with arity = 0) The symbols are represented as a
+    dictionary with the keys: 
+      - *arities* -- A dictionary where a key
+        is a symbol and the value is the arity 
+      - *terminals* -- A list of
+        strings(symbols) with arity 0 
+      - *functions* -- A list of
+        strings(symbols) with arity > 0
+
+    :param arities: A dictionary where a key
+    is a symbol and the value is the arity
+    :type arities: dict
     :return: Symbols used for GP individuals
     :rtype: dict
+
     """
 
     # List of terminal symbols
     terminals = []
-    # List of function symbols with arity 1
-    functions1 = []
-    # List of function symbols with arity 2
-    functions2 = []
-    # List of function symbols with arity 2
-    functions3 = []
     # List of functions
     functions = []
     # Append symbols to terminals or functions by looping over the arities items
@@ -885,27 +832,55 @@ def get_symbols():
         if value == 0:
             # Append the symbols to the terminals list
             terminals.append(key)
-        elif value == 1:
-            functions1.append(key)
-        elif value == 2:
-            functions2.append(key)
         else:
             # Append the symbols to the functions list
-            functions3.append(key)
-        functions = functions1 + functions2 + functions3
-    return {"arities": arities, "terminals": terminals, "functions1": functions1, "functions2": functions2,
-            "functions3": functions3, "functions": functions}
+            functions.append(key)
+
+    return {"arities": arities, "terminals": terminals, "functions": functions}
+
+
+def get_arities(param):
+    """Assign values to arities dictionary. Variables are taken from
+    fitness case file header. Constants are read from config file.
+
+    :param param: The dictionary of parameters
+    :type param: dictionary
+    :return: The arities dictionary
+    :rtype: dictionary
+
+    """
+    arities = param['arities']
+    with open(param["fitness_cases"], "r") as csvFile:
+        reader = csv.reader(csvFile, delimiter=',')
+        # Read the header in order to define the variable arities as 0.
+        headers = reader.__next__()
+
+    # Remove comment symbol
+    headers = headers[1:]
+    # Input variables
+    variables = headers[:-1]
+    # Skip the 
+    for variable in variables:
+        arities[variable.strip()] = 0
+
+    constants = param['constants']
+    for constant in constants:
+        arities[str(constant)] = 0
+
+    return arities
 
 
 def get_test_and_train_data(fitness_cases_file, test_train_split):
-    """
-    Return test and train data. Random selection from file containing data.
+    """Return test and train data. Random selection or exemplars(ros)
+    from file containing data.
+
     :param fitness_cases_file: CSV file with a header.
     :type fitness_cases_file: str
     :param test_train_split: Percentage of exemplar data used for training
     :type test_train_split: float
     :return: Test and train data. Both cases and targets
     :rtype: tuple
+
     """
 
     exemplars, targets = parse_exemplars(fitness_cases_file)
@@ -926,15 +901,14 @@ def get_test_and_train_data(fitness_cases_file, test_train_split):
         test_targets.append(targets[i])
 
     return ({
-                "fitness_cases": test_cases,
-                "targets": test_targets
-            }, {
-                "fitness_cases": training_cases,
-                "targets": training_targets
-            })
+        "fitness_cases": test_cases,
+        "targets": test_targets
+    }, {
+        "fitness_cases": training_cases,
+        "targets": training_targets
+    })
 
 
-# parse_arities()
 def parse_arguments():
     """
     Returns a dictionary of the default parameters, or the ones set by
@@ -949,88 +923,88 @@ def parse_arguments():
         "-p",
         "--population_size",
         type=int,
-        default=param["population_size"],
+        default=10,
         dest="population_size",
         help="Population size is the number of individual "
-             "solutions")
+        "solutions")
     # Size of an individual
     parser.add_argument(
         "-m",
         "--max_depth",
         type=int,
-        default=param["max_depth"],
+        default=3,
         dest="max_depth",
         help="Max depth of tree. Partly determines the search "
-             "space of the solutions")
+        "space of the solutions")
     # Number of elites, i.e. the top solution from the old population
     # transferred to the new population
     parser.add_argument(
         "-e",
         "--elite_size",
         type=int,
-        default=param["elite_size"],
+        default=2,
         dest="elite_size",
         help="Elite size is the number of best individual "
-             "solutions that are preserved between generations")
+        "solutions that are preserved between generations")
     # Generations is the number of times the EA will iterate the search loop
     parser.add_argument(
         "-g",
         "--generations",
         type=int,
-        default=param["generations"],
+        default=4,
         dest="generations",
         help="Number of generations. The number of iterations "
-             "of the search loop.")
+        "of the search loop.")
     # Tournament size
     parser.add_argument(
         "--ts",
         "--tournament_size",
         type=int,
-        default=param["tournament_size"],
+        default=2,
         dest="tournament_size",
         help="Tournament size. The number of individual "
-             "solutions that are compared when determining "
-             "which solutions are inserted into the next "
-             "generation(iteration) of the search loop")
+        "solutions that are compared when determining "
+        "which solutions are inserted into the next "
+        "generation(iteration) of the search loop")
     # Random seed.
     parser.add_argument(
         "-s",
         "--seed",
         type=int,
-        default=param["seed"],
+        default=0,
         dest="seed",
         help="Random seed. For replication of runs of the EA. "
-             "The search is stochastic and and replication of "
-             "the results are guaranteed the random seed")
+        "The search is stochastic and and replication of "
+        "the results are guaranteed the random seed")
     # Probability of crossover
     parser.add_argument(
         "--cp",
         "--crossover_probability",
         type=float,
         dest="crossover_probability",
-        default=param["crossover_probability"],
+        default=0.8,
         help="Crossover probability, [0.0,1.0]. The probability "
-             "of two individual solutions to be varied by the "
-             "crossover operator")
+        "of two individual solutions to be varied by the "
+        "crossover operator")
     # Probability of mutation
     parser.add_argument(
         "--mp",
         "--mutation_probability",
         type=float,
         dest="mutation_probability",
-        default=param["mutation_probability"],
+        default=0.1,
         help="Mutation probability, [0.0, 1.0]. The probability "
-             "of an individual solutions to be varied by the "
-             "mutation operator")
+        "of an individual solutions to be varied by the "
+        "mutation operator")
     # Fitness case file
     parser.add_argument(
         "--fc",
         "--fitness_cases",
-        default=param["fitness_case"],
+        default="fitness_cases.csv",
         dest="fitness_cases",
         help="Fitness cases filename. The exemplars of input and "
-             "the corresponding out put used to train and test "
-             "individual solutions")
+        "the corresponding out put used to train and test "
+        "individual solutions")
     # Test-training data split
     parser.add_argument(
         "--tts",
@@ -1039,28 +1013,45 @@ def parse_arguments():
         default=0.7,
         dest="test_train_split",
         help="Test-train data split, [0.0,1.0]. The ratio of "
-             "fitness cases used for trainging individual "
-             "solutions")
+        "fitness cases used for trainging individual "
+        "solutions")
+    # Config file
+    parser.add_argument(
+        "--config",
+        type=str,
+        required=True,
+        help="Config file in YAML format. Overridden by CLI-arguments")
+
     # Parse the command line arguments
     args = parser.parse_args()
-    return args
+    with open(args.config, 'r') as ymlfile:
+        param = yaml.load(ymlfile)
+
+    # Override config file values with CLI-args
+    _args = vars(args)
+    for key, value in _args.items():
+        param[key] = value
+
+    return param
 
 
 def main():
     """Search. Evaluate best solution on out-of-sample data"""
 
-    args = parse_arguments()
+    param = parse_arguments()
     # Set arguments
-    seed = args.seed
-    test_train_split = args.test_train_split
-    fitness_cases_file = args.fitness_cases
+    seed = param["seed"]
+    test_train_split = param["test_train_split"]
+    fitness_cases_file = param["fitness_cases"]
     # Get the exemplars
     test, train = get_test_and_train_data(fitness_cases_file, test_train_split)
     # Get the symbols
-    symbols = get_symbols()
+    arities = get_arities(param)
+    symbols = get_symbols(arities)
 
-    # Print EA settings
-    # print(args, symbols)
+    # Print GP settings
+    print("GP settings:")
+    print(param, symbols)
 
     # Set random seed if not 0 is passed in as the seed
     if seed != 0:
