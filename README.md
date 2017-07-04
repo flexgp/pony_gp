@@ -106,8 +106,7 @@ Generation:generation number duration:evaluation time fit_ave:average fitness of
 Best solution on train data:{'genome': individual formula/tree, 'fitness': fitness of genome}
 Best solution on test data:{'genome':individual formula/tree, 'fitness':fitness of genome}
 
-```
-Example for the function y=x0 + 1:
+Example for the function `y=x0 + 1`:
 ```
 Reading: fitness_cases.csv headers: ['x0', 'y'] exemplars:5
 Initial tree nr:0 nodes:1 max_depth:0: ['x0']
