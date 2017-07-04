@@ -201,7 +201,7 @@ def get_max_tree_depth(root, depth, max_tree_depth):
     return max_tree_depth
 
 
-def get_depth_from_index(node, idx, node_idx, depth, idx_depth=0):
+def get_depth_at_index(node, idx, node_idx, depth, idx_depth=0):
     """
     Return the depth of a node based on the index. The index is based on
     depth-first left-to-right traversal.
@@ -231,8 +231,8 @@ def get_depth_from_index(node, idx, node_idx, depth, idx_depth=0):
         # Increase the depth
         depth += 1
         # Recursively check the child depth and node index
-        idx_depth, idx = get_depth_from_index(child, idx, node_idx, depth,
-                                              idx_depth)
+        idx_depth, idx = get_depth_at_index(child, idx, node_idx, depth,
+                                            idx_depth)
         # Decrease the depth
         depth -= 1
 
@@ -331,7 +331,6 @@ def evaluate_individual(individual, fitness_cases, targets):
     fitness = 0.0
     # Calculate the error between the output of the individual solution and
     # the target for each input
-    # try-catch-exception and how many errors happened
     for case, target in zip(fitness_cases, targets):
         # Get output from evaluation function
         output = evaluate(individual["genome"], case)
@@ -607,7 +606,7 @@ def subtree_mutation(individual, param):
         node = get_node_at_index(new_individual["genome"], node_idx)
         old_node = node[:]
         #Clear children
-        node_depth = get_depth_from_index(new_individual["genome"], 0, node_idx, 0)[0]
+        node_depth = get_depth_at_index(new_individual["genome"], 0, node_idx, 0)[0]
         new_symbol = get_random_symbol(node_depth, param["max_depth"] - node_depth, param["symbols"])
         new_subtree = [new_symbol]
         #Grow tree
@@ -765,6 +764,21 @@ def run(param):
     best_ever = search_loop(population, param)
 
     return best_ever
+
+
+def out_of_sample_test(individual, fitness_cases, targets):
+    """
+    Out-of-sample test on an individual solution.
+
+    :param individual: Solution to test on data
+    :type individual: dict
+    :param fitness_cases: Input data used for testing
+    :type fitness_cases: list
+    :param targets: Target values of data
+    :type targets: list
+    """
+    evaluate_individual(individual, fitness_cases, targets)
+    print("Best solution on test data:" + str(individual))
 
 
 def parse_exemplars(file_name):
@@ -1040,7 +1054,7 @@ def parse_arguments():
         _grr.append('--{}'.format(key))
         _grr.append(value)
     grr = parser.parse_args(_grr)
-    print(grr)
+
     for key, value in vars(grr).items():
         param[key] = value
 # Override config file values with CLI-args
@@ -1050,58 +1064,39 @@ def parse_arguments():
         if value is not None or key is 'verbose':
             param[key] = value
 
-    print(param)
     return param
 
 
 def main():
     """Search. Evaluate best solution on out-of-sample data"""
 
-    param = parse_arguments()
     # Set arguments
+    param = parse_arguments()
     seed = param["seed"]
+    # Set random seed if not 0 is passed in as the seed
+    if seed != 0:
+        random.seed(seed)
     test_train_split = param["test_train_split"]
     fitness_cases_file = param["fitness_cases"]
     # Get the exemplars
     test, train = get_test_and_train_data(fitness_cases_file, test_train_split)
+    param["fitness_cases"] = train["fitness_cases"]
+    param["targets"] = train["targets"]
     # Get the symbols
     arities = get_arities(param)
     symbols = get_symbols(arities)
+    # Get the namespace dictionary
+    param["symbols"] = symbols
 
     # Print GP settings
     print("GP settings:")
     print(param, symbols)
 
-    # Set random seed if not 0 is passed in as the seed
-    if seed != 0:
-        random.seed(seed)
-
-    # Get the namespace dictionary
-    param["symbols"] = symbols
-    param["fitness_cases"] = train["fitness_cases"]
-    param["targets"] = train["targets"]
-
     # Run
     best_ever = run(param)
     print("Best solution on train data:" + str(best_ever))
     # Test on out-of-sample data
-
     out_of_sample_test(best_ever, test["fitness_cases"], test["targets"])
-
-
-def out_of_sample_test(individual, fitness_cases, targets):
-    """
-    Out-of-sample test on an individual solution.
-
-    :param individual: Solution to test on data
-    :type individual: dict
-    :param fitness_cases: Input data used for testing
-    :type fitness_cases: list
-    :param targets: Target values of data
-    :type targets: list
-    """
-    evaluate_individual(individual, fitness_cases, targets)
-    print("Best solution on test data:" + str(individual))
 
 
 if __name__ == '__main__':

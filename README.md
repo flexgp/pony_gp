@@ -12,8 +12,6 @@ Find a equation for the input given an output.
 
 Example output:
 ```
-Namespace(config='True', crossover_probability=0.8, elite_size=2, fitness_cases='fitness_cases.csv', generations=20, max_depth=5, mutation_probability=0.2, population_size=100, seed=0, test_train_split=0.7, tournament_size=3, verbose=None)
-{'arities': {'+': 2, '*': 2, '/': 2, '-': 2}, 'constants': [0.0, 1.0], 'population_size': 4, 'max_depth': 5, 'elite_size': 2, 'generations': 2, 'tournament_size': 3, 'seed': 0, 'crossover_probability': 0.8, 'mutation_probability': 0.2, 'fitness_cases': 'fitness_cases.csv', 'test_train_split': 0.7, 'config': 'configs.ini', 'verbose': None}
 Reading: fitness_cases.csv headers: ['# x0', 'x1', 'y'] exemplars:121
 GP settings:
 {'arities': {'+': 2, '*': 2, '/': 2, '-': 2, 'x0': 0, 'x1': 0, '0.0': 0, '1.0': 0}, 'constants': [0.0, 1.0], 'population_size': 4, 'max_depth': 5, 'elite_size': 2, 'generations': 2, 'tournament_size': 3, 'seed': 0, 'crossover_probability': 0.8, 'mutation_probability': 0.2, 'fitness_cases': 'fitness_cases.csv', 'test_train_split': 0.7, 'config': 'configs.ini', 'verbose': None} {'arities': {'+': 2, '*': 2, '/': 2, '-': 2, 'x0': 0, 'x1': 0, '0.0': 0, '1.0': 0}, 'terminals': ['x0', 'x1', '0.0', '1.0'], 'functions': ['+', '*', '/', '-']}
