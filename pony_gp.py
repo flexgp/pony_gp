@@ -1,16 +1,13 @@
-import yaml
 import csv
 import argparse
-
+import time
 import random
 import math
 import copy
-"""
-Implementation of Genetic Programming(GP), the purpose of this code is
-to describe how the algorithm works. The intended use is for
-teaching.
-The design is supposed to be simple, self contained and use core python
-libraries.
+""" Implementation of Genetic Programming(GP), the purpose of this
+code is to describe how the algorithm works. The intended use is for
+teaching. The design is supposed to be simple, self contained and use
+core python libraries.
 
 Genetic Programming
 ===================
@@ -47,6 +44,7 @@ DEFAULT_FITNESS = -float("inf")
 def append_node(node, symbol):
     """
     Return the appended node. Append a symbol to the node.
+
     :param node: The node that will be appended to
     :type node: list
     :param symbol: The symbol that is appended
@@ -66,6 +64,7 @@ def grow(node, depth, max_depth, full, symbols):
     """
     Recursively grow a node to max depth in a pre-order, i.e. depth-first
     left-to-right traversal.
+
     :param node: Root node of subtree
     :type node: list
     :param depth: Current tree depth
@@ -98,6 +97,7 @@ def get_children(node):
     """
     Return the children of the node. The children are all the elements of the
     except the first
+
     :param node: The node
     :type node: list
     :return: The children of the node
@@ -111,6 +111,7 @@ def get_number_of_nodes(root, cnt):
     """
     Return the number of nodes in the tree. A recursive depth-first
     left-to-right search is done
+
     :param root: Root of tree
     :type root: list
     :param cnt: Current number of nodes in the tree
@@ -133,6 +134,7 @@ def get_node_at_index(root, idx):
     """
     Return the node in the tree at a given index. The index is
     according to a depth-first left-to-right ordering.
+
     :param root: Root of tree
     :type root: list
     :param idx: Index of node to find
@@ -169,6 +171,7 @@ def get_node_at_index(root, idx):
 def get_max_tree_depth(root, depth, max_tree_depth):
     """
     Return the max depth of the tree. Recursively traverse the tree
+
     :param root: Root of the tree
     :type root: list
     :param depth: Current tree depth
@@ -197,11 +200,13 @@ def get_max_tree_depth(root, depth, max_tree_depth):
     return max_tree_depth
 
 
-def get_depth_from_index(node, idx, node_idx, depth, idx_depth=None):
+def get_depth_from_index(node, idx, node_idx, depth, idx_depth=0):
     """
     Return the depth of a node based on the index. The index is based on
     depth-first left-to-right traversal.
+
     TODO implement breakout
+
     :param node: Current node
     :type node: list
     :param idx: Current index
@@ -215,7 +220,6 @@ def get_depth_from_index(node, idx, node_idx, depth, idx_depth=None):
     :return: Current index and depth of the node at the given index
     :rtype: tuple
     """
-
     # Assign the current depth when the current index matches the given index
     if node_idx == idx:
         idx_depth = depth
@@ -237,6 +241,7 @@ def get_depth_from_index(node, idx, node_idx, depth, idx_depth=None):
 def replace_subtree(new_subtree, old_subtree):
     """
     Replace a subtree.
+
     :param new_subtree: The new subtree
     :type new_subtree: list
     :param old_subtree: The old subtree
@@ -255,7 +260,9 @@ def find_and_replace_symbol(root, symbol, node_idx, idx):
     Returns the current index and replaces the root symbol with another symbol
     at the given index. The index is based on depth-first left-to-right
     traversal.
+
     TODO breakout when root is replaced with subtree
+
     :param root: Root of the tree
     :type root: list
     :param symbol: Symbol that will replace the root
@@ -287,6 +294,7 @@ def get_random_symbol(depth, max_depth, symbols, full=False):
     Return a randomly chosen symbol. The depth determines if a terminal
     must be chosen. If `full` is specified a function will be chosen
     until the max depth. The symbol is picked with a uniform probability.
+
     :param depth: Current depth
     :type depth: int
     :param max_depth: Max depth determines if a function symbol can be
@@ -298,7 +306,6 @@ def get_random_symbol(depth, max_depth, symbols, full=False):
     :returns: A random symbol
     :rtype: str
     """
-    assert depth <= max_depth, "%d %d" % (depth, max_depth)
 
     # Pick a terminal if max depth has been reached
     if depth >= (max_depth - 1):
@@ -322,6 +329,7 @@ def sort_population(individuals):
     """
     Return a list sorted on the fitness value of the individuals in
     the population. Descending order.
+
     :param individuals: The population of individuals
     :type individuals: list
     :return: The population of individuals sorted by fitness in descending order
@@ -374,6 +382,7 @@ def evaluate_individual(individual, fitness_cases, targets):
 def evaluate(node, case):
     """
     Evaluate a node recursively. The node's symbol string is evaluated.
+
     :param node: Evaluated node
     :type node: list
     :param case: Current fitness case
@@ -420,6 +429,7 @@ def initialize_population(param):
     Ramped half-half initialization. The individuals in the
     population are initialized using the grow or the full method for
     each depth value (ramped) up to max_depth.
+
     :param param: parameters for pony gp
     :type param: dict
     :returns: List of individuals
@@ -447,7 +457,8 @@ def initialize_population(param):
         individuals.append(individual)
         if param["verbose"]:
             print('Initial tree nr:{} nodes:{} max_depth:{} tree: {}'.format(
-                i, get_number_of_nodes(tree, 0),
+                i,
+                get_number_of_nodes(tree, 0),
                 get_max_tree_depth(tree, 0, 0), tree))
 
     return individuals
@@ -457,6 +468,7 @@ def evaluate_fitness(individuals, param, cache):
     """
     Evaluation each individual of the population.
     Uses a simple cache for reducing number of evaluations of individuals.
+
     :param individuals: Population to evaluate
     :type individuals: list
     :param param: parameters for pony gp
@@ -478,11 +490,15 @@ def evaluate_fitness(individuals, param, cache):
 
         assert ind["fitness"] >= DEFAULT_FITNESS
 
+    if param["verbose"]:
+        print("CACHE SIZE: {}".format(len(cache)))
+
 
 def search_loop(population, param):
     """
     Return the best individual from the evolutionary search
     loop. Starting from the initial population.
+
     :param population: Initial population of individuals
     :type population: list
     :param param: parameters for pony gp
@@ -493,9 +509,10 @@ def search_loop(population, param):
 
     # Evaluate fitness
     cache = {}
+    tic = time.time()
     evaluate_fitness(population, param, cache)
     # Print the stats of the population
-    print_stats(0, population)
+    print_stats(0, population, time.time() - tic)
     # Set best solution
     sort_population(population)
     best_ever = population[0]
@@ -503,6 +520,7 @@ def search_loop(population, param):
     # Generation loop
     generation = 1
     while generation < param["generations"]:
+        tic = time.time()
         new_population = []
         # Selection
         parents = tournament_selection(population, param)
@@ -523,7 +541,7 @@ def search_loop(population, param):
 
         # Vary the population by mutation
         for i in range(len(new_population)):
-            new_population[i] = point_mutation(new_population[i], param)
+            new_population[i] = subtree_mutation(new_population[i], param)
 
         # Evaluate fitness
         evaluate_fitness(new_population, param, cache)
@@ -536,8 +554,13 @@ def search_loop(population, param):
         sort_population(population)
         best_ever = population[0]
 
+        if param["verbose"]:
+            print("--: {}".format([
+                "{} {:.3f}".format(_["genome"], _["fitness"])
+                for _ in population
+            ]))
         # Print the stats of the population
-        print_stats(generation, population)
+        print_stats(generation, population, time.time() - tic)
 
         # Increase the generation counter
         generation += 1
@@ -545,9 +568,10 @@ def search_loop(population, param):
     return best_ever
 
 
-def print_stats(generation, individuals):
+def print_stats(generation, individuals, duration):
     """
     Print the statistics for the generation and population.
+
     :param generation:generation number
     :type generation: int
     :param individuals: population to get statistics for
@@ -582,18 +606,49 @@ def print_stats(generation, individuals):
     # Get average and standard deviation of max depth
     ave_depth, std_depth = get_ave_and_std(depth_values)
     # Print the statistics
-    print("Generation:%d fit_ave:%.2f+-%.3f size_ave:%.2f+-%.3f "
-          "depth_ave:%.2f+-%.3f max_size:%d max_depth:%d max_fit:%f "
-          "best_solution:%s" %
-          (generation, ave_fit, std_fit, ave_size, std_size, ave_depth,
-           std_depth, max(size_values), max(depth_values), max(fitness_values),
-           individuals[0]))
+    print(
+        "Generation:%d Duration: %.4f fit_ave:%.2f+-%.3f size_ave:%.2f+-%.3f "
+        "depth_ave:%.2f+-%.3f max_size:%d max_depth:%d max_fit:%f "
+        "best_solution:%s" %
+        (generation, duration, ave_fit, std_fit, ave_size, std_size, ave_depth,
+         std_depth, max(size_values), max(depth_values), max(fitness_values),
+         individuals[0]))
+
+
+def subtree_mutation(individual, param):
+    """Subtree mutation. Pick a node and grow it"""
+    
+    # Copy the individual for mutation
+    new_individual = {
+        "genome": copy.deepcopy(individual["genome"]),
+        "fitness": DEFAULT_FITNESS
+    }
+    # Check if mutation should be applied
+    if random.random() < param["mutation_probability"]:
+        #Pick node
+        end_node_idx = get_number_of_nodes(new_individual["genome"], 0) - 1
+        node_idx = random.randint(0, end_node_idx)
+        node = get_node_at_index(new_individual["genome"], node_idx)
+        old_node = node[:]
+        #Clear children
+        node_depth = get_depth_from_index(new_individual["genome"], 0, node_idx, 0)[0]
+        new_symbol = get_random_symbol(node_depth, param["max_depth"] - node_depth, param["symbols"])
+        new_subtree = [new_symbol]
+        #Grow tree
+        grow(new_subtree, node_depth, param["max_depth"], False, param["symbols"])
+        replace_subtree(new_subtree, node)
+        if param["verbose"]:
+            print("MUTATED: {} to {}. subtree: {} to subtree: {} at idx {}".format(new_individual["genome"], individual["genome"], old_node, new_subtree,
+                                                       node_idx))
+        
+    return new_individual
 
 
 def point_mutation(individual, param):
     """
         Return a new individual by randomly picking a node and picking a new
         symbol with the same arity.
+
         :param individual: Individual to mutate
         :type individual: dict
         :param param: parameters for pony gp
@@ -602,17 +657,12 @@ def point_mutation(individual, param):
         :rtype: dict
         """
 
-    # Copy the individual for mutation
-    new_individual = {
-        "genome": copy.deepcopy(individual["genome"]),
-        "fitness": DEFAULT_FITNESS
-    }
-    # Check if mutation should be applied
     if random.random() < param["mutation_probability"]:
         # Pick random node
         end_node_idx = get_number_of_nodes(new_individual["genome"], 0) - 1
         node_idx = random.randint(0, end_node_idx)
         node = get_node_at_index(new_individual["genome"], node_idx)
+        # Pick the same type of symbol
         if param["symbols"]["arities"][node[0]] == 0:
             new_symbol = random.choice(param["symbols"]["terminals"])
         elif param["symbols"]["arities"][node[0]] == 2:
@@ -620,6 +670,10 @@ def point_mutation(individual, param):
         else:
             raise Exception("Unknown arity: {}".format(param["symbols"][
                 "arities"][node[0]]))
+
+        if param["verbose"]:
+            print("MUTATED: {} to {} at idx {}".format(node[0], new_symbol,
+                                                       node_idx))
 
         # Get a new symbol for the subtree
         node[0] = new_symbol
@@ -633,6 +687,7 @@ def subtree_crossover(parent1, parent2, param):
     Returns two individuals. The individuals are created by
     selecting two random nodes from the parents and swapping the
     subtrees.
+
     :param parent1: Parent one to crossover
     :type parent1: dict
     :param parent2: Parent two to crossover
@@ -669,7 +724,14 @@ def subtree_crossover(parent1, parent2, param):
         # Make sure that the offspring is deep enough
         if (node_depths[0][1] + node_depths[1][0]) >= param["max_depth"] or \
                         (node_depths[1][1] + node_depths[0][0]) >= param["max_depth"]:
+            if param["verbose"]:
+                print("Too deep: {} or {} is > {}".format((node_depths[0][
+                    1] + node_depths[1][0]), (node_depths[1][1] + node_depths[
+                        0][0]), param["max_depth"]))
             return offsprings
+
+        if param["verbose"]:
+            print("CROSSOVER {} to {}".format(xo_nodes[0], xo_nodes[1]))
 
         # Swap the nodes
         tmp_offspring_1_node = copy.deepcopy(xo_nodes[1])
@@ -681,7 +743,8 @@ def subtree_crossover(parent1, parent2, param):
         replace_subtree(tmp_offspring_1_node, xo_nodes[0])
 
         for offspring in offsprings:
-            assert get_max_tree_depth(offspring["genome"], 0, 0) <= param["max_depth"]
+            assert get_max_tree_depth(offspring["genome"], 0,
+                                      0) <= param["max_depth"]
 
     # Return the offsprings
     return offsprings
@@ -693,6 +756,7 @@ def tournament_selection(population, param):
     `tournament_size` competitors randomly and selecting the best
     of the competitors. `population_size` number of tournaments are
     held.
+
     :param population: Population to select from
     :type population: list
     :param param: parameters for pony gp
@@ -721,6 +785,7 @@ def generational_replacement(new_population, old_population, param):
     are appended to the new population. They are kept in the new
     population if they are better than the worst.
     population if they are better than the worst.
+
     :param new_population: the new population
     :type new_population: list
     :param old_population: the old population
@@ -749,6 +814,7 @@ def run(param):
     """
     Return the best solution. Create an initial
     population. Perform an evolutionary search.
+
     :param param: parameters for pony gp
     :type param: dict
     :returns: Best solution
@@ -769,6 +835,7 @@ def parse_exemplars(file_name):
     Test and train data. In the fitness case file each row is an exemplar
     and each dimension is in a column. The last column is the target value of
     the exemplar.
+
     :param file_name: CSV file with header
     :type file_name: str
     :return: Fitness cases and targets
@@ -879,7 +946,6 @@ def get_test_and_train_data(fitness_cases_file, test_train_split):
     :type test_train_split: float
     :return: Test and train data. Both cases and targets
     :rtype: tuple
-
     """
 
     exemplars, targets = parse_exemplars(fitness_cases_file)
@@ -912,6 +978,7 @@ def parse_arguments():
     """
     Returns a dictionary of the default parameters, or the ones set by
     commandline arguments
+
     :return: parameters for the GP run
     :rtype: dict
     """
@@ -922,7 +989,6 @@ def parse_arguments():
         "-p",
         "--population_size",
         type=int,
-        default=10,
         dest="population_size",
         help="Population size is the number of individual "
         "solutions")
@@ -931,7 +997,6 @@ def parse_arguments():
         "-m",
         "--max_depth",
         type=int,
-        default=3,
         dest="max_depth",
         help="Max depth of tree. Partly determines the search "
         "space of the solutions")
@@ -941,7 +1006,6 @@ def parse_arguments():
         "-e",
         "--elite_size",
         type=int,
-        default=2,
         dest="elite_size",
         help="Elite size is the number of best individual "
         "solutions that are preserved between generations")
@@ -950,7 +1014,6 @@ def parse_arguments():
         "-g",
         "--generations",
         type=int,
-        default=4,
         dest="generations",
         help="Number of generations. The number of iterations "
         "of the search loop.")
@@ -959,7 +1022,6 @@ def parse_arguments():
         "--ts",
         "--tournament_size",
         type=int,
-        default=2,
         dest="tournament_size",
         help="Tournament size. The number of individual "
         "solutions that are compared when determining "
@@ -970,7 +1032,6 @@ def parse_arguments():
         "-s",
         "--seed",
         type=int,
-        default=0,
         dest="seed",
         help="Random seed. For replication of runs of the EA. "
         "The search is stochastic and and replication of "
@@ -981,7 +1042,6 @@ def parse_arguments():
         "--crossover_probability",
         type=float,
         dest="crossover_probability",
-        default=0.8,
         help="Crossover probability, [0.0,1.0]. The probability "
         "of two individual solutions to be varied by the "
         "crossover operator")
@@ -991,7 +1051,6 @@ def parse_arguments():
         "--mutation_probability",
         type=float,
         dest="mutation_probability",
-        default=0.1,
         help="Mutation probability, [0.0, 1.0]. The probability "
         "of an individual solutions to be varied by the "
         "mutation operator")
@@ -999,7 +1058,6 @@ def parse_arguments():
     parser.add_argument(
         "--fc",
         "--fitness_cases",
-        default="fitness_cases.csv",
         dest="fitness_cases",
         help="Fitness cases filename. The exemplars of input and "
         "the corresponding out put used to train and test "
@@ -1009,7 +1067,6 @@ def parse_arguments():
         "--tts",
         "--test_train_split",
         type=float,
-        default=0.7,
         dest="test_train_split",
         help="Test-train data split, [0.0,1.0]. The ratio of "
         "fitness cases used for training individual "
@@ -1031,14 +1088,21 @@ def parse_arguments():
 
     # Parse the command line arguments
     args = parser.parse_args()
-    with open(args.config, 'r') as ymlfile:
-        param = yaml.load(ymlfile)
+    param = {}
+    if args.config:
+        import yaml
+        with open(args.config, 'r') as ymlfile:
+            param = yaml.load(ymlfile)
 
+            
     # Override config file values with CLI-args
     _args = vars(args)
+    print(_args)
     for key, value in _args.items():
-        param[key] = value
+        if value is not None or key is 'verbose':
+            param[key] = value
 
+    print(param)
     return param
 
 

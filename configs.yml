@@ -14,7 +14,7 @@ constants:
 
 # Specify the number of individuals(population) make sure the
 # population size is GREATER than the number of inputs
-population_size: 10
+population_size: 4
 
 # Specify the max depth of the tree
 max_depth: 3
@@ -23,21 +23,21 @@ max_depth: 3
 elite_size: 1
 
 # Specify the number of generations you would like to generate
-generations: 4
+generations: 30
 
 # Specify the number of individual solutions that are compared when
 # determining which solutions are inserted into next generation of the
 # search loop
-tournament_size: 2
+tournament_size: 3
 
 # Random seed. Enables a user to replicate experiment
 seed: 0
 
 # Probability of individual solutions to be varied by the crossover operator
-crossover_probability: 0.8
+crossover_probability: 0.9
 
 # Probability of individual solutions to be varied by the mutation operator
-mutation_probability: 0.2
+mutation_probability: 0.1
 
 # Name of file that has data(inputs and outputs) stored in it.
 fitness_cases: "fitness_cases.csv"
