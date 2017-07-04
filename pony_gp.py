@@ -255,40 +255,6 @@ def replace_subtree(new_subtree, old_subtree):
         old_subtree.append(copy.deepcopy(node))
 
 
-def find_and_replace_symbol(root, symbol, node_idx, idx):
-    """
-    Returns the current index and replaces the root symbol with another symbol
-    at the given index. The index is based on depth-first left-to-right
-    traversal.
-
-    TODO breakout when root is replaced with subtree
-
-    :param root: Root of the tree
-    :type root: list
-    :param symbol: Symbol that will replace the root
-    :type symbol: str
-    :param node_idx: Index of the node to be replaced
-    :type node_idx: int
-    :param idx: Current index
-    :type idx: int
-    :return: Current index
-    :rtype: int
-    """
-
-    # Check if index is the given node idx for replacement
-    if node_idx == idx:
-        # Replace the subtree
-        root[0] = symbol
-    else:
-        # Iterate over the children
-        for child in get_children(root):
-            # Recursively traverse the tree
-            idx = idx + 1
-            idx = find_and_replace_symbol(child, symbol, node_idx, idx)
-
-    return idx
-
-
 def get_random_symbol(depth, max_depth, symbols, full=False):
     """
     Return a randomly chosen symbol. The depth determines if a terminal
@@ -616,7 +582,16 @@ def print_stats(generation, individuals, duration):
 
 
 def subtree_mutation(individual, param):
-    """Subtree mutation. Pick a node and grow it"""
+    """Subtree mutation. Pick a node and grow it.
+
+        :param individual: Individual to mutate
+        :type individual: dict
+        :param param: parameters for pony gp
+        :type param: dict
+        :returns: Mutated individual
+        :rtype: dict
+
+    """
     
     # Copy the individual for mutation
     new_individual = {
@@ -641,44 +616,6 @@ def subtree_mutation(individual, param):
             print("MUTATED: {} to {}. subtree: {} to subtree: {} at idx {}".format(new_individual["genome"], individual["genome"], old_node, new_subtree,
                                                        node_idx))
         
-    return new_individual
-
-
-def point_mutation(individual, param):
-    """
-        Return a new individual by randomly picking a node and picking a new
-        symbol with the same arity.
-
-        :param individual: Individual to mutate
-        :type individual: dict
-        :param param: parameters for pony gp
-        :type param: dict
-        :returns: Mutated individual
-        :rtype: dict
-        """
-
-    if random.random() < param["mutation_probability"]:
-        # Pick random node
-        end_node_idx = get_number_of_nodes(new_individual["genome"], 0) - 1
-        node_idx = random.randint(0, end_node_idx)
-        node = get_node_at_index(new_individual["genome"], node_idx)
-        # Pick the same type of symbol
-        if param["symbols"]["arities"][node[0]] == 0:
-            new_symbol = random.choice(param["symbols"]["terminals"])
-        elif param["symbols"]["arities"][node[0]] == 2:
-            new_symbol = random.choice(param["symbols"]["functions"])
-        else:
-            raise Exception("Unknown arity: {}".format(param["symbols"][
-                "arities"][node[0]]))
-
-        if param["verbose"]:
-            print("MUTATED: {} to {} at idx {}".format(node[0], new_symbol,
-                                                       node_idx))
-
-        # Get a new symbol for the subtree
-        node[0] = new_symbol
-
-    # Return the individual
     return new_individual
 
 
@@ -725,7 +662,7 @@ def subtree_crossover(parent1, parent2, param):
         if (node_depths[0][1] + node_depths[1][0]) >= param["max_depth"] or \
                         (node_depths[1][1] + node_depths[0][0]) >= param["max_depth"]:
             if param["verbose"]:
-                print("Too deep: {} or {} is > {}".format((node_depths[0][
+                print("Crossover is too deep: {} or {} is > {}".format((node_depths[0][
                     1] + node_depths[1][0]), (node_depths[1][1] + node_depths[
                         0][0]), param["max_depth"]))
             return offsprings
