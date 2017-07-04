@@ -1076,17 +1076,17 @@ def main():
     # Set random seed if not 0 is passed in as the seed
     if seed != 0:
         random.seed(seed)
+    # Get the symbols
+    arities = get_arities(param)
+    symbols = get_symbols(arities)
+    # Get the namespace dictionary
+    param["symbols"] = symbols
     test_train_split = param["test_train_split"]
     fitness_cases_file = param["fitness_cases"]
     # Get the exemplars
     test, train = get_test_and_train_data(fitness_cases_file, test_train_split)
     param["fitness_cases"] = train["fitness_cases"]
     param["targets"] = train["targets"]
-    # Get the symbols
-    arities = get_arities(param)
-    symbols = get_symbols(arities)
-    # Get the namespace dictionary
-    param["symbols"] = symbols
 
     # Print GP settings
     print("GP settings:")
