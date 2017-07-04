@@ -86,24 +86,23 @@ optional arguments:
 
 ## Output
 Keep running until fitness for train data and test data reaches approximately 0.
-```
-#Statistics on Data
+
+### Statistics on Data
 Reading: csv file containing input and output data for program to execute
          headers: [input(s), output] exemplars: amount of input and output points
 
-#Refer to the above usage section to apprehend this line
-#Individual Statistics
+### Individual Statistics
 Initial individual nr:individual number nodes: amount of nodes or different symbols in the individual
 max_depth: max depth of individual(refer to usage): individual generated
 
-#Generation Statistics
+### Generation Statistics
 Generation:generation number duration:evaluation time fit_ave:average fitness of the generation
            size_ave:average number of nodes in the genearation amongst all data points
            depth_ave:average max_tree depth max_size: maximum number of nodes
            max_depth: maximum depth max_fit: maximum fitness
            best_solution:{'genome': individual formula/tree, 'fitness': fitness of genome}
 
-#Best Solution Statistics
+### Best Solution Statistics
 Best solution on train data:{'genome': individual formula/tree, 'fitness': fitness of genome}
 Best solution on test data:{'genome':individual formula/tree, 'fitness':fitness of genome}
 
