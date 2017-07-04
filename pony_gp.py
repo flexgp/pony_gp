@@ -1,3 +1,4 @@
+import configparser
 import csv
 import argparse
 import time
@@ -1013,7 +1014,7 @@ def parse_arguments():
         "--config",
         type=str,
         required=True,
-        help="Config file in YAML format. Overridden by CLI-arguments")
+        help="Config file in Python INI format. Overridden by CLI-arguments.")
     # Verbose
     parser.add_argument(
         "--verbose",
@@ -1026,15 +1027,25 @@ def parse_arguments():
     # Parse the command line arguments
     args = parser.parse_args()
     param = {}
-    if args.config:
-        import yaml
-        with open(args.config, 'r') as ymlfile:
-            param = yaml.load(ymlfile)
+    config = configparser.ConfigParser()
+    config.read(args.config)
+    param['arities'] = {}
+    for k, v in config['arities'].items():
+        param['arities'][k] = int(v)
+    param['constants'] = [float(_.strip()) for _ in config['constants']['values'].split(',')]
 
-            
-    # Override config file values with CLI-args
+    # Get the types by using the argument parser
+    _grr = ['--config', 'True']
+    for key, value in config['Search parameters'].items():
+        _grr.append('--{}'.format(key))
+        _grr.append(value)
+    grr = parser.parse_args(_grr)
+    print(grr)
+    for key, value in vars(grr).items():
+        param[key] = value
+# Override config file values with CLI-args
     _args = vars(args)
-    print(_args)
+
     for key, value in _args.items():
         if value is not None or key is 'verbose':
             param[key] = value
