@@ -457,7 +457,10 @@ def evaluate_fitness(individuals, param, cache):
         assert ind["fitness"] >= DEFAULT_FITNESS
 
     if param["verbose"]:
-        print("CACHE SIZE: {}".format(len(cache)))
+        print("CACHE SIZE: {} UNIQUE: {}/{}".format(len(cache),
+                                                    len(dict([(str(_["genome"]), None) for _ in individuals])),
+                                                    param["population_size"]))
+
 
 
 def search_loop(population, param):
@@ -478,7 +481,7 @@ def search_loop(population, param):
     tic = time.time()
     evaluate_fitness(population, param, cache)
     # Print the stats of the population
-    print_stats(0, population, time.time() - tic)
+    print_stats(0, population, time.time() - tic, param)
     # Set best solution
     sort_population(population)
     best_ever = population[0]
@@ -520,13 +523,8 @@ def search_loop(population, param):
         sort_population(population)
         best_ever = population[0]
 
-        if param["verbose"]:
-            print("--: {}".format([
-                "{} {:.3f}".format(_["genome"], _["fitness"])
-                for _ in population
-            ]))
         # Print the stats of the population
-        print_stats(generation, population, time.time() - tic)
+        print_stats(generation, population, time.time() - tic, param)
 
         # Increase the generation counter
         generation += 1
@@ -534,7 +532,7 @@ def search_loop(population, param):
     return best_ever
 
 
-def print_stats(generation, individuals, duration):
+def print_stats(generation, individuals, duration, param):
     """
     Print the statistics for the generation and population.
 
@@ -542,6 +540,10 @@ def print_stats(generation, individuals, duration):
     :type generation: int
     :param individuals: population to get statistics for
     :type individuals: list
+    :param duration: duration of computation
+    :type duration: float
+    :param param: Parameters
+    :type param: dict
     """
 
     def get_ave_and_std(values):
@@ -559,6 +561,8 @@ def print_stats(generation, individuals, duration):
 
     # Make sure individuals are sorted
     sort_population(individuals)
+    if param["verbose"]:
+        print("POPULATION: {}".format(individuals))
     # Get the fitness values
     fitness_values = [i["fitness"] for i in individuals]
     # Get the number of nodes
@@ -600,21 +604,21 @@ def subtree_mutation(individual, param):
     }
     # Check if mutation should be applied
     if random.random() < param["mutation_probability"]:
-        #Pick node
+        # Pick node
         end_node_idx = get_number_of_nodes(new_individual["genome"], 0) - 1
         node_idx = random.randint(0, end_node_idx)
         node = get_node_at_index(new_individual["genome"], node_idx)
         old_node = node[:]
-        #Clear children
+        # Clear children
         node_depth = get_depth_at_index(new_individual["genome"], 0, node_idx, 0)[0]
         new_symbol = get_random_symbol(node_depth, param["max_depth"] - node_depth, param["symbols"])
         new_subtree = [new_symbol]
-        #Grow tree
+        # Grow tree
         grow(new_subtree, node_depth, param["max_depth"], False, param["symbols"])
         replace_subtree(new_subtree, node)
         if param["verbose"]:
-            print("MUTATED: {} to {}. subtree: {} to subtree: {} at idx {}".format(new_individual["genome"], individual["genome"], old_node, new_subtree,
-                                                       node_idx))
+            print("MUTATED: {} to {}. subtree: {} to subtree: {} at idx {}".format(
+                new_individual["genome"], individual["genome"], old_node, new_subtree, node_idx))
         
     return new_individual
 
@@ -856,30 +860,35 @@ def get_symbols(arities):
     return {"arities": arities, "terminals": terminals, "functions": functions}
 
 
-def get_arities(param):
+def get_arities(param, outputs=1):
     """Assign values to arities dictionary. Variables are taken from
     fitness case file header. Constants are read from config file.
 
     :param param: The dictionary of parameters
     :type param: dictionary
+    :param outputs: The number of output columns from the input
+    :type outputs: int
     :return: The arities dictionary
     :rtype: dictionary
 
     """
+
+    assert outputs > 0
+
     arities = param['arities']
     with open(param["fitness_cases"], "r") as csvFile:
         reader = csv.reader(csvFile, delimiter=',')
         # Read the header in order to define the variable arities as 0.
         headers = reader.__next__()
 
-    # Remove comment symbol
+    # Remove comment symbol for the first eleent, i.e. #x0
     headers[0] = headers[0][1:]
-    # Input variables
-    variables = headers[:-1]
-    # Skip the 
+    # Input variables are all
+    variables = headers[:-outputs]
     for variable in variables:
         arities[variable.strip()] = 0
 
+    # Add constant values
     constants = param['constants']
     if constants:
         for constant in constants:
@@ -1040,29 +1049,44 @@ def parse_arguments():
 
     # Parse the command line arguments
     args = parser.parse_args()
-    param = {}
-    config = configparser.ConfigParser()
-    config.read(args.config)
-    param['arities'] = {}
-    for k, v in config['arities'].items():
-        param['arities'][k] = int(v)
-    param['constants'] = [float(_.strip()) for _ in config['constants']['values'].split(',')]
+    param = parse_config_file(args, parser)
 
-    # Get the types by using the argument parser
-    _grr = ['--config', 'True']
-    for key, value in config['Search parameters'].items():
-        _grr.append('--{}'.format(key))
-        _grr.append(value)
-    grr = parser.parse_args(_grr)
-
-    for key, value in vars(grr).items():
-        param[key] = value
-# Override config file values with CLI-args
+    # Override config file values with CLI-args
     _args = vars(args)
-
     for key, value in _args.items():
         if value is not None or key is 'verbose':
             param[key] = value
+
+    return param
+
+
+def parse_config_file(args, parser):
+    """Parse configuration file.
+
+    :param args: CLI arguments
+    :type args: argparse.Namespace
+    :param parser: CLI parser
+    :type parser: argparse.ArgumentParser
+    :return: Parameters
+    :rtype: dict
+    """
+    param = {}
+    config_parser = configparser.ConfigParser()
+    config_parser.read(args.config)
+    # Parse function(non-terminal) symbols and arity
+    param['arities'] = {}
+    for k, v in config_parser['arities'].items():
+        param['arities'][k] = int(v)
+    # Parse constants
+    param['constants'] = [float(_.strip()) for _ in config_parser['constants']['values'].split(',')]
+    # Get the type of the search parameter by using the argument parser
+    tmp = ['--config', 'True']
+    for key, value in config_parser['Search parameters'].items():
+        tmp.append('--{}'.format(key))
+        tmp.append(value)
+    tmp = parser.parse_args(tmp)
+    for key, value in vars(tmp).items():
+        param[key] = value
 
     return param
 
@@ -1090,7 +1114,7 @@ def main():
 
     # Print GP settings
     print("GP settings:")
-    print(param, symbols)
+    print(param)
 
     # Run
     best_ever = run(param)
