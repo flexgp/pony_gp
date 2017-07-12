@@ -432,38 +432,6 @@ def initialize_population(param):
     return individuals
 
 
-def evaluate_fitness(individuals, param, cache):
-    """
-    Evaluation each individual of the population.
-    Uses a simple cache for reducing number of evaluations of individuals.
-
-    :param individuals: Population to evaluate
-    :type individuals: list
-    :param param: parameters for pony gp
-    :type param: dict
-    :param cache: Cache for fitness evaluations
-    :type cache: dict
-    """
-
-    # Iterate over all the individual solutions
-    for ind in individuals:
-        # The string representation of the tree is the cache key
-        key = str(ind["genome"])
-        if key in cache.keys():
-            ind["fitness"] = cache[key]
-        else:
-            # Execute the fitness function
-            evaluate_individual(ind, param["fitness_cases"], param["targets"])
-            cache[key] = ind["fitness"]
-
-        assert ind["fitness"] >= DEFAULT_FITNESS
-
-    if param["verbose"]:
-        print("CACHE SIZE: {} UNIQUE: {}/{}".format(len(cache),
-                                                    len(dict([(str(_["genome"]), None) for _ in individuals])),
-                                                    param["population_size"]))
-
-
 def coevaluate_fitness(population, adversaries, param, cache):
     """
     Evaluate and assign fitness to the population and the adversaries.
@@ -483,6 +451,7 @@ def coevaluate_fitness(population, adversaries, param, cache):
     for adversary in adversaries:        
         exemplars = {"cases": [], "targets": []}
         adversary_fitness = []
+        print(adversary["genome"])
         for case in param["fitness_cases"]:
             case_p = evaluate(adversary["genome"], case)
             case_p = [case_p] * len(param["variables"])
@@ -498,13 +467,21 @@ def coevaluate_fitness(population, adversaries, param, cache):
                 evaluate_individual(individual, exemplars["cases"],
                                     exemplars["targets"])
                 cache[key] = individual["fitness"]
-                
+
+            print('\t',individual["genome"], individual["fitness"])
             adversary_fitness.append(individual["fitness"])
             population_fitnesses[str(individual["genome"])].append(individual["fitness"])
 
         adversary_fitness = -1.0 * (float(sum(adversary_fitness)) / float(len(population)))
         adversary["fitness"] = adversary_fitness
 
+    if param["verbose"]:
+        print("CACHE SIZE: {} UNIQUE DEFENDER: {}/{} UNIQUE ATTACKER: {}/{}".format(
+            len(cache), len(dict([(str(_["genome"]), None) for _ in population])),
+            param["population_size"],
+            len(dict([(str(_["genome"]), None) for _ in adversaries])),
+            param["population_size"]))
+        
     for individual_genome, fitnesses in population_fitnesses.items():
         fitness = float(sum(fitnesses)) / float(len(fitnesses))
         for individual in population:
@@ -543,6 +520,7 @@ def search_loop(populations, param):
     generation = 1
     while generation < param["generations"]:
         tic = time.time()
+        new_populations = {}
         for name, population in populations.items():
             new_population = []
             # Selection
@@ -566,12 +544,16 @@ def search_loop(populations, param):
             for i in range(len(new_population)):
                 new_population[i] = subtree_mutation(new_population[i], param)
 
+            new_populations[name] = new_population
+            
         # Evaluate fitness
-        coevaluate_fitness(populations["defender"], populations["attacker"], param, cache)
+        coevaluate_fitness(new_populations["defender"],
+                           new_populations["attacker"], param, cache)
 
-        for name, population in populations.items():
+        for name in populations.keys():
             # Replace population
-            population = generational_replacement(new_population, population,
+            population = generational_replacement(new_populations[name],
+                                                  populations[name],
                                                   param)
 
             # Set best solution
@@ -581,6 +563,8 @@ def search_loop(populations, param):
             # Print the stats of the population
             print_stats(generation, population, time.time() - tic, param, name)
 
+            populations[name] = population
+            
         # Increase the generation counter
         generation += 1
 
