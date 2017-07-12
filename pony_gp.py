@@ -1,3 +1,5 @@
+import collections
+import sys
 import configparser
 import csv
 import argparse
@@ -462,69 +464,122 @@ def evaluate_fitness(individuals, param, cache):
                                                     param["population_size"]))
 
 
+def coevaluate_fitness(population, adversaries, param, cache):
+    """
+    Evaluate and assign fitness to the population and the adversaries.
 
-def search_loop(population, param):
+    Fitness is the average.
+
+    :param population: Population to evaluate
+    :type population: list
+    :param adversaries: Population to evaluate
+    :type adversaries: list
+    :param param: parameters for pony gp
+    :type param: dict
+    :param cache: Cache for fitness evaluations
+    :type cache: dict
+    """
+    population_fitnesses = collections.defaultdict(list)
+    for adversary in adversaries:        
+        exemplars = {"cases": [], "targets": []}
+        adversary_fitness = []
+        for case in param["fitness_cases"]:
+            case_p = evaluate(adversary["genome"], case)
+            case_p = [case_p] * len(param["variables"])
+            target = evaluate(param["system_function"], case_p)
+            exemplars["cases"].append(case_p)
+            exemplars["targets"].append(target)
+            
+        for individual in population:
+            key = str(individual["genome"]) + str(exemplars)
+            if key in cache.keys():
+                individual["fitness"] = cache[key]
+            else:
+                evaluate_individual(individual, exemplars["cases"],
+                                    exemplars["targets"])
+                cache[key] = individual["fitness"]
+                
+            adversary_fitness.append(individual["fitness"])
+            population_fitnesses[str(individual["genome"])].append(individual["fitness"])
+
+        adversary_fitness = -1.0 * (float(sum(adversary_fitness)) / float(len(population)))
+        adversary["fitness"] = adversary_fitness
+
+    for individual_genome, fitnesses in population_fitnesses.items():
+        fitness = float(sum(fitnesses)) / float(len(fitnesses))
+        for individual in population:
+            if individual_genome == str(individual["genome"]):
+                individual["fitness"] = fitness
+                break
+            
+        
+def search_loop(populations, param):
     """
     Return the best individual from the evolutionary search
     loop. Starting from the initial population.
 
-    :param population: Initial population of individuals
-    :type population: list
+    :param populations: Initial populations of individuals
+    :type populations: dict
     :param param: parameters for pony gp
     :type param: dict
     :returns: Best individual
-    :rtype: Individual
+    :rtype: dict
     """
 
     # Evaluate fitness
     cache = {}
+    best_ever = collections.OrderedDict()
+    
     tic = time.time()
-    evaluate_fitness(population, param, cache)
+    coevaluate_fitness(populations["defender"], populations["attacker"], param, cache)
     # Print the stats of the population
-    print_stats(0, population, time.time() - tic, param)
-    # Set best solution
-    sort_population(population)
-    best_ever = population[0]
+    for name, population in populations.items():
+        print_stats(0, population, time.time() - tic, param, name)
+        # Set best solution
+        sort_population(population)
+        best_ever[name] = [population[0]]
 
     # Generation loop
     generation = 1
     while generation < param["generations"]:
         tic = time.time()
-        new_population = []
-        # Selection
-        parents = tournament_selection(population, param)
+        for name, population in populations.items():
+            new_population = []
+            # Selection
+            parents = tournament_selection(population, param)
 
-        # Crossover
-        while len(new_population) < param["population_size"]:
-            # Select parents
-            _parents = random.sample(parents, 2)
-            # Generate children by crossing over the parents
-            children = subtree_crossover(_parents[0], _parents[1], param)
-            # Append the children to the new population
-            for child in children:
-                new_population.append(child)
+            # Crossover
+            while len(new_population) < param["population_size"]:
+                # Select parents
+                _parents = random.sample(parents, 2)
+                # Generate children by crossing over the parents
+                children = subtree_crossover(_parents[0], _parents[1], param)
+                # Append the children to the new population
+                for child in children:
+                    new_population.append(child)
 
-        # Select population size individuals. Handles uneven population
-        # sizes, since crossover returns 2 offspring
-        new_population = new_population[:param["population_size"]]
+            # Select population size individuals. Handles uneven population
+            # sizes, since crossover returns 2 offspring
+            new_population = new_population[:param["population_size"]]
 
-        # Vary the population by mutation
-        for i in range(len(new_population)):
-            new_population[i] = subtree_mutation(new_population[i], param)
+            # Vary the population by mutation
+            for i in range(len(new_population)):
+                new_population[i] = subtree_mutation(new_population[i], param)
 
         # Evaluate fitness
-        evaluate_fitness(new_population, param, cache)
+        coevaluate_fitness(populations["defender"], populations["attacker"], param, cache)
 
-        # Replace population
-        population = generational_replacement(new_population, population,
-                                              param)
+        for name, population in populations.items():
+            # Replace population
+            population = generational_replacement(new_population, population,
+                                                  param)
 
-        # Set best solution
-        sort_population(population)
-        best_ever = population[0]
+            # Set best solution
+            sort_population(population)
+            best_ever[name] = population[0]
 
-        # Print the stats of the population
-        print_stats(generation, population, time.time() - tic, param)
+            # Print the stats of the population
+            print_stats(generation, population, time.time() - tic, param, name)
 
         # Increase the generation counter
         generation += 1
@@ -532,7 +587,7 @@ def search_loop(population, param):
     return best_ever
 
 
-def print_stats(generation, individuals, duration, param):
+def print_stats(generation, individuals, duration, param, name=""):
     """
     Print the statistics for the generation and population.
 
@@ -577,10 +632,10 @@ def print_stats(generation, individuals, duration, param):
     ave_depth, std_depth = get_ave_and_std(depth_values)
     # Print the statistics
     print(
-        "Generation:%d Duration: %.4f fit_ave:%.2f+-%.3f size_ave:%.2f+-%.3f "
+        "%s Generation:%d Duration: %.4f fit_ave:%.2f+-%.3f size_ave:%.2f+-%.3f "
         "depth_ave:%.2f+-%.3f max_size:%d max_depth:%d max_fit:%f "
         "best_solution:%s" %
-        (generation, duration, ave_fit, std_fit, ave_size, std_size, ave_depth,
+        (name, generation, duration, ave_fit, std_fit, ave_size, std_size, ave_depth,
          std_depth, max(size_values), max(depth_values), max(fitness_values),
          individuals[0]))
 
@@ -763,62 +818,14 @@ def run(param):
     """
 
     # Create population
-    population = initialize_population(param)
+    populations = {}
+    for population_name in param["populations"]:
+        populations[population_name] = initialize_population(param)
+
     # Start evolutionary search
-    best_ever = search_loop(population, param)
+    best_ever = search_loop(populations, param)
 
     return best_ever
-
-
-def out_of_sample_test(individual, fitness_cases, targets):
-    """
-    Out-of-sample test on an individual solution.
-
-    :param individual: Solution to test on data
-    :type individual: dict
-    :param fitness_cases: Input data used for testing
-    :type fitness_cases: list
-    :param targets: Target values of data
-    :type targets: list
-    """
-    evaluate_individual(individual, fitness_cases, targets)
-    print("Best solution on test data:" + str(individual))
-
-
-def parse_exemplars(file_name):
-    """
-    Parse a CSV file. Parse the fitness case and split the data into
-    Test and train data. In the fitness case file each row is an exemplar
-    and each dimension is in a column. The last column is the target value of
-    the exemplar.
-
-    :param file_name: CSV file with header
-    :type file_name: str
-    :return: Fitness cases and targets
-    :rtype: list
-    """
-
-    # Open file
-    with open(file_name, 'r') as in_file:
-        # Create a CSV file reader
-        reader = csv.reader(in_file, skipinitialspace=True, delimiter=',')
-
-        # Read the header
-        headers = reader.__next__()
-
-        # Store fitness cases and their target values
-        fitness_cases = []
-        targets = []
-        for row in reader:
-            # Parse the columns to floats and append to fitness cases
-            fitness_cases.append(list(map(float, row[:-1])))
-            # The last column is the target
-            targets.append(float(row[-1]))
-
-        print("Reading: %s headers: %s exemplars:%d" %
-              (file_name, headers, len(targets)))
-
-    return fitness_cases, targets
 
 
 def get_symbols(arities):
@@ -876,15 +883,8 @@ def get_arities(param, outputs=1):
     assert outputs > 0
 
     arities = param['arities']
-    with open(param["fitness_cases"], "r") as csvFile:
-        reader = csv.reader(csvFile, delimiter=',')
-        # Read the header in order to define the variable arities as 0.
-        headers = reader.__next__()
-
-    # Remove comment symbol for the first eleent, i.e. #x0
-    headers[0] = headers[0][1:]
     # Input variables are all
-    variables = headers[:-outputs]
+    variables = param["variables"]
     for variable in variables:
         arities[variable.strip()] = 0
 
@@ -1015,14 +1015,6 @@ def parse_arguments():
         help="Mutation probability, [0.0, 1.0]. The probability "
         "of an individual solutions to be varied by the "
         "mutation operator")
-    # Fitness case file
-    parser.add_argument(
-        "--fc",
-        "--fitness_cases",
-        dest="fitness_cases",
-        help="Fitness cases filename. The exemplars of input and "
-        "the corresponding out put used to train and test "
-        "individual solutions")
     # Test-training data split
     parser.add_argument(
         "--tts",
@@ -1077,8 +1069,22 @@ def parse_config_file(args, parser):
     param['arities'] = {}
     for k, v in config_parser['arities'].items():
         param['arities'][k] = int(v)
+
     # Parse constants
     param['constants'] = [float(_.strip()) for _ in config_parser['constants']['values'].split(',')]
+
+    # Parse populations
+    param['populations'] = [_.strip() for _ in config_parser['Coevolution']['populations'].split(',')]
+
+    # Get System function
+    param["system_function"] = eval(config_parser["Fitness function"]["system_function"])
+
+    # Get fitness cases
+    param["fitness_cases"] = eval(config_parser["Fitness function"]["fitness_cases"])
+
+    # Get variables
+    param["variables"] = eval(config_parser["constants"]["variables"])
+    
     # Get the type of the search parameter by using the argument parser
     tmp = ['--config', 'True']
     for key, value in config_parser['Search parameters'].items():
@@ -1105,12 +1111,6 @@ def main():
     symbols = get_symbols(arities)
     # Get the namespace dictionary
     param["symbols"] = symbols
-    test_train_split = param["test_train_split"]
-    fitness_cases_file = param["fitness_cases"]
-    # Get the exemplars
-    test, train = get_test_and_train_data(fitness_cases_file, test_train_split)
-    param["fitness_cases"] = train["fitness_cases"]
-    param["targets"] = train["targets"]
 
     # Print GP settings
     print("GP settings:")
@@ -1118,9 +1118,7 @@ def main():
 
     # Run
     best_ever = run(param)
-    print("Best solution on train data:" + str(best_ever))
-    # Test on out-of-sample data
-    out_of_sample_test(best_ever, test["fitness_cases"], test["targets"])
+    print("Best solutions:" + str(best_ever))
 
 
 if __name__ == '__main__':
