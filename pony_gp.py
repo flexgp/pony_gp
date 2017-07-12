@@ -451,7 +451,6 @@ def coevaluate_fitness(population, adversaries, param, cache):
     for adversary in adversaries:        
         exemplars = {"cases": [], "targets": []}
         adversary_fitness = []
-        print(adversary["genome"])
         for case in param["fitness_cases"]:
             case_p = evaluate(adversary["genome"], case)
             case_p = [case_p] * len(param["variables"])
@@ -463,17 +462,19 @@ def coevaluate_fitness(population, adversaries, param, cache):
             key = str(individual["genome"]) + str(exemplars)
             if key in cache.keys():
                 individual["fitness"] = cache[key]
+                print('\tC',individual["fitness"], individual["genome"])
             else:
                 evaluate_individual(individual, exemplars["cases"],
                                     exemplars["targets"])
                 cache[key] = individual["fitness"]
-
-            print('\t',individual["genome"], individual["fitness"])
+                print('\t',individual["fitness"], individual["genome"])
+                
             adversary_fitness.append(individual["fitness"])
             population_fitnesses[str(individual["genome"])].append(individual["fitness"])
 
         adversary_fitness = -1.0 * (float(sum(adversary_fitness)) / float(len(population)))
         adversary["fitness"] = adversary_fitness
+        print(adversary, exemplars)
 
     if param["verbose"]:
         print("CACHE SIZE: {} UNIQUE DEFENDER: {}/{} UNIQUE ATTACKER: {}/{}".format(
@@ -487,7 +488,6 @@ def coevaluate_fitness(population, adversaries, param, cache):
         for individual in population:
             if individual_genome == str(individual["genome"]):
                 individual["fitness"] = fitness
-                break
             
         
 def search_loop(populations, param):
@@ -599,9 +599,9 @@ def print_stats(generation, individuals, duration, param, name=""):
         return _ave, _std
 
     # Make sure individuals are sorted
-    sort_population(individuals)
+    individuals = sort_population(individuals)
     if param["verbose"]:
-        print("POPULATION: {}".format(individuals))
+        print("{} POPULATION: {}".format(name, individuals))
     # Get the fitness values
     fitness_values = [i["fitness"] for i in individuals]
     # Get the number of nodes
@@ -999,15 +999,6 @@ def parse_arguments():
         help="Mutation probability, [0.0, 1.0]. The probability "
         "of an individual solutions to be varied by the "
         "mutation operator")
-    # Test-training data split
-    parser.add_argument(
-        "--tts",
-        "--test_train_split",
-        type=float,
-        dest="test_train_split",
-        help="Test-train data split, [0.0,1.0]. The ratio of "
-        "fitness cases used for training individual "
-        "solutions")
     # Config file
     parser.add_argument(
         "--config",
@@ -1067,7 +1058,7 @@ def parse_config_file(args, parser):
     param["fitness_cases"] = eval(config_parser["Fitness function"]["fitness_cases"])
 
     # Get variables
-    param["variables"] = eval(config_parser["constants"]["variables"])
+    param["variables"] = eval(config_parser["Fitness function"]["variables"])
     
     # Get the type of the search parameter by using the argument parser
     tmp = ['--config', 'True']
@@ -1097,12 +1088,12 @@ def main():
     param["symbols"] = symbols
 
     # Print GP settings
-    print("GP settings:")
-    print(param)
+    print("GP settings:\n {}".format(param))
 
     # Run
     best_ever = run(param)
-    print("Best solutions:" + str(best_ever))
+    for key, value in best_ever.items():
+        print("{} End solutions: {}".format(key, value))
 
 
 if __name__ == '__main__':
