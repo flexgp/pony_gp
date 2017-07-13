@@ -453,7 +453,7 @@ def coevaluate_fitness(population, adversaries, param, cache):
         adversary_fitness = []
         for case in param["fitness_cases"]:
             case_p = evaluate(adversary["genome"], case)
-            case_p = [case_p] * len(param["variables"])
+            case_p = [case_p - i for i in range(len(param["variables"]))]
             target = evaluate(param["system_function"], case_p)
             exemplars["cases"].append(case_p)
             exemplars["targets"].append(target)
