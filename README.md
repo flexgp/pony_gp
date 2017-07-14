@@ -22,7 +22,7 @@ Best solution on test data:{'genome': ['1.0'], 'fitness': -487.1081081081081}
 ```
 
 If you wish to,
-change the paramaters from the 'configs.ini' file to your desired
+change the paramaters from the `configs.ini` file to your desired
 paramaters or allow it to remain at its default values.
 
 The input with their respective output is in the file `fitness_case.csv`. The
