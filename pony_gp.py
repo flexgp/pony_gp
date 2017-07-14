@@ -476,7 +476,9 @@ def search_loop(population, param):
     :rtype: Individual
     """
 
+    ######################
     # Evaluate fitness
+    ######################
     cache = {}
     tic = time.time()
     evaluate_fitness(population, param, cache)
@@ -486,14 +488,22 @@ def search_loop(population, param):
     sort_population(population)
     best_ever = population[0]
 
+    ######################
     # Generation loop
+    ######################
     generation = 1
     while generation < param["generations"]:
         tic = time.time()
         new_population = []
+        ##################
         # Selection
+        ##################
         parents = tournament_selection(population, param)
 
+        ##################
+        # Variation. Generate new individual solutions
+        ##################
+        
         # Crossover
         while len(new_population) < param["population_size"]:
             # Select parents
@@ -512,10 +522,14 @@ def search_loop(population, param):
         for i in range(len(new_population)):
             new_population[i] = subtree_mutation(new_population[i], param)
 
+        ##################
         # Evaluate fitness
+        ##################
         evaluate_fitness(new_population, param, cache)
 
-        # Replace population
+        ##################
+        # Replacement. Replace individual solutions in the population
+        ##################
         population = generational_replacement(new_population, population,
                                               param)
 
@@ -1091,9 +1105,12 @@ def parse_config_file(args, parser):
     return param
 
 
-def main():
-    """Search. Evaluate best solution on out-of-sample data"""
+def setup():
+    """ Wrapper for set up.
 
+    :return: Parameters
+    :rtype: dict
+    """
     # Set arguments
     param = parse_arguments()
     seed = param["seed"]
@@ -1111,15 +1128,26 @@ def main():
     test, train = get_test_and_train_data(fitness_cases_file, test_train_split)
     param["fitness_cases"] = train["fitness_cases"]
     param["targets"] = train["targets"]
-
+    param["out_of_sample_test_data"] = test
+    
     # Print GP settings
     print("GP settings:")
     print(param)
 
+    return param
+
+
+def main():
+    """Search. Evaluate best solution on out-of-sample data"""
+
+    # Setup
+    param = setup()
+    
     # Run
     best_ever = run(param)
     print("Best solution on train data:" + str(best_ever))
     # Test on out-of-sample data
+    test = param["out_of_sample_test_data"]
     out_of_sample_test(best_ever, test["fitness_cases"], test["targets"])
 
 
