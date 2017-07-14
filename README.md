@@ -83,11 +83,7 @@ optional arguments:
 ```
 
 ## Output
-Keep running until fitness for train data and test data reaches approximately 0.
-
-### Statistics on Data
-Reading: csv file containing input and output data for program to execute
-         headers: [input(s), output] exemplars: amount of input and output points
+Runs for `generations`
 
 ### Individual Statistics
 
