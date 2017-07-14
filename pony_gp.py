@@ -449,10 +449,13 @@ def coevaluate_fitness(population, adversaries, param, cache):
     """
     population_fitnesses = collections.defaultdict(list)
     for adversary in adversaries:        
+        # Create exemplars by transforming the original fitness cases
+        # and then evaluating the new values on the system function
         exemplars = {"cases": [], "targets": []}
         adversary_fitness = []
         for case in param["fitness_cases"]:
             case_p = evaluate(adversary["genome"], case)
+            # TODO transform variables to correct dimensions
             case_p = [case_p - i for i in range(len(param["variables"]))]
             target = evaluate(param["system_function"], case_p)
             exemplars["cases"].append(case_p)
@@ -462,19 +465,16 @@ def coevaluate_fitness(population, adversaries, param, cache):
             key = str(individual["genome"]) + str(exemplars)
             if key in cache.keys():
                 individual["fitness"] = cache[key]
-                print('\tC',individual["fitness"], individual["genome"])
             else:
                 evaluate_individual(individual, exemplars["cases"],
                                     exemplars["targets"])
                 cache[key] = individual["fitness"]
-                print('\t',individual["fitness"], individual["genome"])
                 
             adversary_fitness.append(individual["fitness"])
             population_fitnesses[str(individual["genome"])].append(individual["fitness"])
 
         adversary_fitness = -1.0 * (float(sum(adversary_fitness)) / float(len(population)))
         adversary["fitness"] = adversary_fitness
-        print(adversary, exemplars)
 
     if param["verbose"]:
         print("CACHE SIZE: {} UNIQUE DEFENDER: {}/{} UNIQUE ATTACKER: {}/{}".format(
@@ -601,7 +601,8 @@ def print_stats(generation, individuals, duration, param, name=""):
     # Make sure individuals are sorted
     individuals = sort_population(individuals)
     if param["verbose"]:
-        print("{} POPULATION: {}".format(name, individuals))
+        print("{} POPULATION: {}".format(name.upper(), individuals))
+        
     # Get the fitness values
     fitness_values = [i["fitness"] for i in individuals]
     # Get the number of nodes
@@ -616,12 +617,12 @@ def print_stats(generation, individuals, duration, param, name=""):
     ave_depth, std_depth = get_ave_and_std(depth_values)
     # Print the statistics
     print(
-        "%s Generation:%d Duration: %.4f fit_ave:%.2f+-%.3f size_ave:%.2f+-%.3f "
-        "depth_ave:%.2f+-%.3f max_size:%d max_depth:%d max_fit:%f "
-        "best_solution:%s" %
-        (name, generation, duration, ave_fit, std_fit, ave_size, std_size, ave_depth,
-         std_depth, max(size_values), max(depth_values), max(fitness_values),
-         individuals[0]))
+        "{} Generation:{} Duration: {:.4f} fit_ave:{:.2f}+-{:.3f} size_ave:{:.2f}+-{:.3f} "
+        "depth_ave:{:.2f}+-{:.3f} max_size:{} max_depth:{} max_fit:{} "
+        "best_solution:{}".format(
+            name.upper(), generation, duration, ave_fit, std_fit, ave_size, std_size, ave_depth,
+            std_depth, max(size_values), max(depth_values), max(fitness_values),
+            individuals[0]))
 
 
 def subtree_mutation(individual, param):
@@ -881,44 +882,6 @@ def get_arities(param, outputs=1):
     return arities
 
 
-def get_test_and_train_data(fitness_cases_file, test_train_split):
-    """Return test and train data. Random selection or exemplars(ros)
-    from file containing data.
-
-    :param fitness_cases_file: CSV file with a header.
-    :type fitness_cases_file: str
-    :param test_train_split: Percentage of exemplar data used for training
-    :type test_train_split: float
-    :return: Test and train data. Both cases and targets
-    :rtype: tuple
-    """
-
-    exemplars, targets = parse_exemplars(fitness_cases_file)
-    split_idx = int(math.floor(len(exemplars) * test_train_split))
-    # Randomize
-    idx = list(range(0, len(exemplars)))
-    random.shuffle(idx)
-    training_cases = []
-    training_targets = []
-    test_cases = []
-    test_targets = []
-    for i in idx[:split_idx]:
-        training_cases.append(exemplars[i])
-        training_targets.append(targets[i])
-
-    for i in idx[split_idx:]:
-        test_cases.append(exemplars[i])
-        test_targets.append(targets[i])
-
-    return ({
-        "fitness_cases": test_cases,
-        "targets": test_targets
-    }, {
-        "fitness_cases": training_cases,
-        "targets": training_targets
-    })
-
-
 def parse_arguments():
     """
     Returns a dictionary of the default parameters, or the ones set by
@@ -1046,10 +1009,10 @@ def parse_config_file(args, parser):
         param['arities'][k] = int(v)
 
     # Parse constants
-    param['constants'] = [float(_.strip()) for _ in config_parser['constants']['values'].split(',')]
+    param['constants'] = eval(config_parser['constants']['values'])
 
     # Parse populations
-    param['populations'] = [_.strip() for _ in config_parser['Coevolution']['populations'].split(',')]
+    param['populations'] = eval(config_parser['Coevolution']['populations'])
 
     # Get System function
     param["system_function"] = eval(config_parser["Fitness function"]["system_function"])
@@ -1061,12 +1024,13 @@ def parse_config_file(args, parser):
     param["variables"] = eval(config_parser["Fitness function"]["variables"])
     
     # Get the type of the search parameter by using the argument parser
-    tmp = ['--config', 'True']
+    tmp_param = ['--config', 'True']
     for key, value in config_parser['Search parameters'].items():
-        tmp.append('--{}'.format(key))
-        tmp.append(value)
-    tmp = parser.parse_args(tmp)
-    for key, value in vars(tmp).items():
+        tmp_param.append('--{}'.format(key))
+        tmp_param.append(value)
+        
+    tmp_param = parser.parse_args(tmp_param)
+    for key, value in vars(tmp_param).items():
         param[key] = value
 
     return param
@@ -1093,7 +1057,7 @@ def main():
     # Run
     best_ever = run(param)
     for key, value in best_ever.items():
-        print("{} End solutions: {}".format(key, value))
+        print("{} End solutions: {}".format(key.upper(), value))
 
 
 if __name__ == '__main__':
