@@ -99,3 +99,10 @@ individual(refer to usage): individual generated
 Best solution on train data:{'genome': individual formula/tree, 'fitness': fitness of genome}
 Best solution on test data:{'genome':individual formula/tree, 'fitness':fitness of genome}
 ```
+
+# Test
+
+Run 
+```
+python test_pony_gp.py
+```
