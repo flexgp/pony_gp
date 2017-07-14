@@ -8,7 +8,7 @@ to be simple, self contained and use core python libraries.
 
 Find a equation for the input given an output.
 
-```python python pony_gp.py --config=configs.ini ``` 
+```python pony_gp.py --config=configs.ini ``` 
 
 Example output:
 ```
