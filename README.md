@@ -90,32 +90,16 @@ Reading: csv file containing input and output data for program to execute
          headers: [input(s), output] exemplars: amount of input and output points
 
 ### Individual Statistics
-Initial individual nr:individual number nodes: amount of nodes or different symbols in the individual
-max_depth: max depth of individual(refer to usage): individual generated
+
+`Initial individual nr`:individual number nodes: amount of nodes or
+different symbols in the individual, `max_depth`: max depth of
+individual(refer to usage): individual generated
 
 ### Generation Statistics
-Generation:generation number duration:evaluation time fit_ave:average fitness of the generation
-           size_ave:average number of nodes in the genearation amongst all data points
-           depth_ave:average max_tree depth max_size: maximum number of nodes
-           max_depth: maximum depth max_fit: maximum fitness
-           best_solution:{'genome': individual formula/tree, 'fitness': fitness of genome}
+`Generation`:generation number, `duration`:evaluation time, `fit_ave`:average fitness of the generation, `size_ave`:average number of nodes in the genearation amongst all solutions, `depth_ave`:average max_tree depth, max_size`: maximum number of nodes, `max_depth`: maximum depth, `max_fit`: maximum fitnessm `best_solution`:{`'genome'`: individual formula/tree, `'fitness'`: fitness of genome}
 
 ### Best Solution Statistics
+```
 Best solution on train data:{'genome': individual formula/tree, 'fitness': fitness of genome}
 Best solution on test data:{'genome':individual formula/tree, 'fitness':fitness of genome}
-
-Example for the function `y=x0 + 1`:
 ```
-Reading: fitness_cases.csv headers: ['x0', 'y'] exemplars:5
-Initial tree nr:0 nodes:1 max_depth:0: ['x0']
-Initial tree nr:1 nodes:3 max_depth:1: ['+', ['1'], ['x0']]
-Initial tree nr:2 nodes:1 max_depth:0: ['0']
-Initial tree nr:3 nodes:15 max_depth:3: ['/', ['/', ['*', ['x0'], ['1']], ['-', ['1'], ['x0']]], ['-', ['+', ['x0'], ['1']], ['+', ['1'], ['x0']]]]
-Initial tree nr:4 nodes:1 max_depth:0: ['1']
-Initial tree nr:5 nodes:1 max_depth:0: ['1']
-Generation:0 fit_ave:-7.44+-6.036 size_ave:3.67+-5.121 depth_ave:0.67+-1.106 max_size:15 max_depth:3 max_fit:-0.000000 best_solution:{'genome': ['x0'], 'fitness': -1.0}
-Generation:1 fit_ave:-11.83+-11.505 size_ave:2.67+-0.745 depth_ave:0.83+-0.373 max_size:3 max_depth:1 max_fit:-0.000000 best_solution:{'genome': ['+', ['1'], ['x0']], 'fitness': -0.0}
-Best solution on train data:{'genome': ['+', ['1'], ['x0']], 'fitness': -0.0}
-Best solution on test data:{'genome': ['+', ['1'], ['x0']], 'fitness': -0.0}
-```
-
