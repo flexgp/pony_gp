@@ -43,7 +43,6 @@ The parameters for Pony GP are in a dictionary.
 """
 DEFAULT_FITNESS = -float("inf")
 
-
 def append_node(node, symbol):
     """
     Return the appended node. Append a symbol to the node.
@@ -454,13 +453,9 @@ def coevaluate_fitness(population, adversaries, param, cache):
         exemplars = {"cases": [], "targets": []}
         adversary_fitness = []
         for case in param["fitness_cases"]:
-            case_p = evaluate(adversary["genome"], case)
-            # TODO transform variables to correct dimensions
-            case_p = [case_p - i for i in range(len(param["variables"]))]
-            target = evaluate(param["system_function"], case_p)
-            exemplars["cases"].append(case_p)
-            exemplars["targets"].append(target)
-            
+            exemplars["cases"].append(case[0:-1])
+            exemplars["targets"].append(case[-1])
+
         for individual in population:
             key = str(individual["genome"]) + str(exemplars)
             if key in cache.keys():
@@ -990,6 +985,18 @@ def parse_arguments():
     return param
 
 
+def get_fitness_cases(path):
+    """Parse csv file for training data
+    :param path: File path
+    :return: Training data as float tuples
+    """
+    with open(path, newline='') as input_file:
+        reader = csv.reader(input_file, delimiter=',', quotechar='|')
+        # Skip CSV header
+        next(reader)
+        return [[float(i) for i in row] for row in reader]
+
+
 def parse_config_file(args, parser):
     """Parse configuration file.
 
@@ -1014,15 +1021,12 @@ def parse_config_file(args, parser):
     # Parse populations
     param['populations'] = eval(config_parser['Coevolution']['populations'])
 
-    # Get System function
-    param["system_function"] = eval(config_parser["Fitness function"]["system_function"])
-
     # Get fitness cases
-    param["fitness_cases"] = eval(config_parser["Fitness function"]["fitness_cases"])
+    param["fitness_cases"] = get_fitness_cases(config_parser["Fitness function"]["input_file"])
 
     # Get variables
     param["variables"] = eval(config_parser["Fitness function"]["variables"])
-    
+
     # Get the type of the search parameter by using the argument parser
     tmp_param = ['--config', 'True']
     for key, value in config_parser['Search parameters'].items():
@@ -1035,12 +1039,12 @@ def parse_config_file(args, parser):
 
     return param
 
-
 def main():
     """Search. Evaluate best solution on out-of-sample data"""
 
     # Set arguments
     param = parse_arguments()
+
     seed = param["seed"]
     # Set random seed if not 0 is passed in as the seed
     if seed != 0:
