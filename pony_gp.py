@@ -383,9 +383,19 @@ def evaluate(node, case):
 
         return numerator / denominator
 
+    elif symbol.startswith("and"):
+        return int(evaluate(node[1], case)) & int((evaluate(node[2], case)))
+
+    elif symbol.startswith("or"):
+        return int(evaluate(node[1], case)) | int((evaluate(node[2], case)))
+
+    elif symbol.startswith("xor"):
+        return int(evaluate(node[1], case)) ^ int((evaluate(node[2], case)))
+
     elif symbol.startswith("x"):
         # Get the variable value
         return case[int(symbol[1:])]
+
     else:
         # The symbol is a constant
         return float(symbol)
