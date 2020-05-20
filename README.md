@@ -1,3 +1,5 @@
+![Python package](https://github.com/flexgp/pony_gp/workflows/Python%20package/badge.svg)
+
 `pony_gp` is an implementation of Genetic Programming(GP), see e.g.
 <http://geneticprogramming.com>. The purpose of `pony_gp` is to describe how
 the GP algorithm works. The intended use is for teaching. The aim is to allow
