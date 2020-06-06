@@ -1107,7 +1107,7 @@ def parse_arguments() -> dict[str, Any]:
     # Override config file values with CLI-args
     _args = vars(args)
     for key, value in _args.items():
-        if value is not None or key is "verbose":
+        if value is not None or key == "verbose":
             param[key] = value
 
     return param
