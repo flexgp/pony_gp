@@ -1,4 +1,3 @@
-from __future__ import annotations
 import configparser
 import csv
 import argparse
@@ -6,7 +5,7 @@ import time
 import random
 import math
 import copy
-from typing import Any
+from typing import Any, List, Dict, Tuple
 
 """ Implementation of Genetic Programming(GP), the purpose of this
 code is to describe how the algorithm works. The intended use is for
@@ -45,7 +44,7 @@ The parameters for Pony GP are in a dictionary.
 DEFAULT_FITNESS = -float("inf")
 
 
-def append_node(node: list[Any], symbol: str) -> list[Any]:
+def append_node(node: List[Any], symbol: str) -> List[Any]:
     """
     Return the appended node. Append a symbol to the node.
 
@@ -64,7 +63,7 @@ def append_node(node: list[Any], symbol: str) -> list[Any]:
     return new_node
 
 
-def grow(node: list[Any], depth: int, max_depth: int, full: bool, symbols: dict[str, str]) -> None:
+def grow(node: List[Any], depth: int, max_depth: int, full: bool, symbols: Dict[str, Any]) -> None:
     """
     Recursively grow a node to max depth in a pre-order, i.e. depth-first
     left-to-right traversal.
@@ -97,7 +96,7 @@ def grow(node: list[Any], depth: int, max_depth: int, full: bool, symbols: dict[
     assert depth <= max_depth, "%d %d" % (depth, max_depth)
 
 
-def get_children(node: list[Any]) -> list[Any]:
+def get_children(node: List[Any]) -> List[Any]:
     """
     Return the children of the node. The children are all the elements of the
     except the first
@@ -111,7 +110,7 @@ def get_children(node: list[Any]) -> list[Any]:
     return node[1:]
 
 
-def get_number_of_nodes(root: list[Any], cnt: int) -> int:
+def get_number_of_nodes(root: List[Any], cnt: int) -> int:
     """
     Return the number of nodes in the tree. A recursive depth-first
     left-to-right search is done
@@ -134,7 +133,7 @@ def get_number_of_nodes(root: list[Any], cnt: int) -> int:
     return cnt
 
 
-def get_node_at_index(root: list[Any], idx: int) -> list[Any]:
+def get_node_at_index(root: List[Any], idx: int) -> List[Any]:
     """
     Return the node in the tree at a given index. The index is
     according to a depth-first left-to-right ordering.
@@ -172,7 +171,7 @@ def get_node_at_index(root: list[Any], idx: int) -> list[Any]:
     return node
 
 
-def get_max_tree_depth(root: list[Any], depth: int, max_tree_depth: int) -> int:
+def get_max_tree_depth(root: List[Any], depth: int, max_tree_depth: int) -> int:
     """
     Return the max depth of the tree. Recursively traverse the tree
 
@@ -205,8 +204,8 @@ def get_max_tree_depth(root: list[Any], depth: int, max_tree_depth: int) -> int:
 
 
 def get_depth_at_index(
-    node: list[Any], idx: int, node_idx: int, depth: int, idx_depth: int = 0
-) -> tuple[int, int]:
+    node: List[Any], idx: int, node_idx: int, depth: int, idx_depth: int = 0
+) -> Tuple[int, int]:
     """
     Return the depth of a node based on the index. The index is based on
     depth-first left-to-right traversal.
@@ -243,7 +242,7 @@ def get_depth_at_index(
     return idx_depth, idx
 
 
-def replace_subtree(new_subtree: list[Any], old_subtree: list[Any]) -> list[Any]:
+def replace_subtree(new_subtree: List[Any], old_subtree: List[Any]) -> None:
     """
     Replace a subtree.
 
@@ -261,7 +260,7 @@ def replace_subtree(new_subtree: list[Any], old_subtree: list[Any]) -> list[Any]
 
 
 def get_random_symbol(
-    depth: int, max_depth: int, symbols: dict[str, str], full: bool = False
+    depth: int, max_depth: int, symbols: Dict[str, str], full: bool = False
 ) -> str:
     """
     Return a randomly chosen symbol. The depth determines if a terminal
@@ -298,7 +297,7 @@ def get_random_symbol(
     return symbol
 
 
-def sort_population(individuals: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def sort_population(individuals: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Return a list sorted on the fitness value of the individuals in
     the population. Descending order.
@@ -317,7 +316,7 @@ def sort_population(individuals: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def evaluate_individual(
-    individual: dict[str, Any], fitness_cases: list[float], targets: list[float]
+    individual: Dict[str, Any], fitness_cases: List[List[float]], targets: List[float]
 ):
     """
     Evaluate fitness based on fitness cases and target values. Fitness
@@ -353,7 +352,7 @@ def evaluate_individual(
     assert individual["fitness"] <= 0
 
 
-def evaluate(node: list[Any], case: list[float]) -> float:
+def evaluate(node: List[Any], case: List[float]) -> float:
     """
     Evaluate a node recursively. The node's symbol string is evaluated.
 
@@ -398,7 +397,7 @@ def evaluate(node: list[Any], case: list[float]) -> float:
         return float(symbol)
 
 
-def initialize_population(param: dict[str, Any]) -> list[dict[str, Any]]:
+def initialize_population(param: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     Ramped half-half initialization. The individuals in the
     population are initialized using the grow or the full method for
@@ -440,8 +439,8 @@ def initialize_population(param: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def evaluate_fitness(
-    individuals: list[dict[str, Any]], param: dict[str, Any], cache: dict[str, float]
-) -> dict[str, Any]:
+    individuals: List[Dict[str, Any]], param: Dict[str, Any], cache: Dict[str, float]
+):
     """
     Evaluation each individual of the population.
     Uses a simple cache for reducing number of evaluations of individuals.
@@ -477,7 +476,7 @@ def evaluate_fitness(
         )
 
 
-def search_loop(population: list[dict[str, Any]], param: dict[str, Any]) -> dict[str, Any]:
+def search_loop(population: List[Dict[str, Any]], param: Dict[str, Any]) -> Dict[str, Any]:
     """
     Return the best individual from the evolutionary search
     loop. Starting from the initial population.
@@ -493,7 +492,7 @@ def search_loop(population: list[dict[str, Any]], param: dict[str, Any]) -> dict
     ######################
     # Evaluate fitness
     ######################
-    cache = {}
+    cache: Dict[str, float] = {}
     tic = time.time()
     evaluate_fitness(population, param, cache)
     # Print the stats of the population
@@ -508,7 +507,7 @@ def search_loop(population: list[dict[str, Any]], param: dict[str, Any]) -> dict
     generation = 1
     while generation < param["generations"]:
         tic = time.time()
-        new_population = []
+        new_population: List[Dict[str, Any]] = []
         ##################
         # Selection
         ##################
@@ -560,7 +559,7 @@ def search_loop(population: list[dict[str, Any]], param: dict[str, Any]) -> dict
 
 
 def print_stats(
-    generation: int, individuals: list[dict[str, Any]], duration: float, param: dict[str, Any]
+    generation: int, individuals: List[Dict[str, Any]], duration: float, param: Dict[str, Any]
 ) -> None:
     """
     Print the statistics for the generation and population.
@@ -575,7 +574,7 @@ def print_stats(
     :type param: dict
     """
 
-    def get_ave_and_std(values: list[float]) -> tuple[float]:
+    def get_ave_and_std(values: List[Any]) -> Tuple[float, float]:
         """
         Return average and standard deviation.
         :param values: Values to calculate on
@@ -625,7 +624,7 @@ def print_stats(
     )
 
 
-def subtree_mutation(individual: dict[str, Any], param: dict[str, Any]) -> dict[str, Any]:
+def subtree_mutation(individual: Dict[str, Any], param: Dict[str, Any]) -> Dict[str, Any]:
     """Subtree mutation. Pick a node and grow it.
 
         :param individual: Individual to mutate
@@ -666,8 +665,8 @@ def subtree_mutation(individual: dict[str, Any], param: dict[str, Any]) -> dict[
 
 
 def subtree_crossover(
-    parent1: dict[str, Any], parent2: dict[str, Any], param: dict[str, Any]
-) -> tuple[dict[str, Any]]:
+    parent1: Dict[str, Any], parent2: Dict[str, Any], param: Dict[str, Any]
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Returns two individuals. The individuals are created by
     selecting two random nodes from the parents and swapping the
@@ -736,8 +735,8 @@ def subtree_crossover(
 
 
 def tournament_selection(
-    population: list[dict[str, Any]], param: dict[str, Any]
-) -> list[dict[str, Any]]:
+    population: List[Dict[str, Any]], param: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     """
     Return individuals from a population by drawing
     `tournament_size` competitors randomly and selecting the best
@@ -753,7 +752,7 @@ def tournament_selection(
     """
 
     # Iterate until there are enough tournament winners selected
-    winners = []
+    winners: List[Dict[str, Any]] = []
     while len(winners) < param["population_size"]:
         # Randomly select tournament size individual solutions
         # from the population.
@@ -767,10 +766,10 @@ def tournament_selection(
 
 
 def generational_replacement(
-    new_population: list[dict[str, Any]],
-    old_population: list[dict[str, Any]],
-    param: dict[str, Any],
-) -> list[dict[str, Any]]:
+    new_population: List[Dict[str, Any]],
+    old_population: List[Dict[str, Any]],
+    param: Dict[str, Any],
+) -> List[Dict[str, Any]]:
     """
     Return new a population. The `elite_size` best old_population
     are appended to the new population. They are kept in the new
@@ -801,7 +800,7 @@ def generational_replacement(
     return new_population[: param["population_size"]]
 
 
-def run(param: dict[str, Any]) -> dict[str, Any]:
+def run(param: Dict[str, Any]) -> Dict[str, Any]:
     """
     Return the best solution. Create an initial
     population. Perform an evolutionary search.
@@ -821,7 +820,7 @@ def run(param: dict[str, Any]) -> dict[str, Any]:
 
 
 def out_of_sample_test(
-    individual: dict[str, Any], fitness_cases: list[float], targets: list[float]
+    individual: Dict[str, Any], fitness_cases: List[List[float]], targets: List[float]
 ) -> None:
     """
     Out-of-sample test on an individual solution.
@@ -837,7 +836,7 @@ def out_of_sample_test(
     print("Best solution on test data:" + str(individual))
 
 
-def parse_exemplars(file_name: str) -> tuple[list[float]]:
+def parse_exemplars(file_name: str) -> Tuple[List[List[float]], List[float]]:
     """
     Parse a CSV file. Parse the fitness case and split the data into
     Test and train data. In the fitness case file each row is an exemplar
@@ -872,7 +871,7 @@ def parse_exemplars(file_name: str) -> tuple[list[float]]:
     return fitness_cases, targets
 
 
-def get_symbols(arities: dict[str, int]) -> dict[str, Any]:
+def get_symbols(arities: Dict[str, int]) -> Dict[str, Any]:
     """Return a symbol dictionary. Helper method to keep the code clean. 
 
     The nodes in a GP tree consists of different symbols. The symbols
@@ -911,7 +910,7 @@ def get_symbols(arities: dict[str, int]) -> dict[str, Any]:
     return {"arities": arities, "terminals": terminals, "functions": functions}
 
 
-def get_arities(param: dict[str, Any], outputs: int = 1) -> dict[str, Any]:
+def get_arities(param: Dict[str, Any], outputs: int = 1) -> Dict[str, Any]:
     """Assign values to arities dictionary. Variables are taken from
     fitness case file header. Constants are read from config file.
 
@@ -950,7 +949,7 @@ def get_arities(param: dict[str, Any], outputs: int = 1) -> dict[str, Any]:
 
 def get_test_and_train_data(
     fitness_cases_file: str, test_train_split: float
-) -> tuple[dict[str, list[float]]]:
+) -> Tuple[Dict[str, List[Any]], Dict[str, List[Any]]]:
     """Return test and train data. Random selection or exemplars(ros)
     from file containing data.
 
@@ -985,7 +984,7 @@ def get_test_and_train_data(
     )
 
 
-def parse_arguments() -> dict[str, Any]:
+def parse_arguments() -> Dict[str, Any]:
     """
     Returns a dictionary of the default parameters, or the ones set by
     commandline arguments
@@ -1116,7 +1115,7 @@ def parse_arguments() -> dict[str, Any]:
 
 def parse_config_file(
     args: "argparse.Namespace", parser: "argparse.ArgumentParser"
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Parse configuration file.
 
     :param args: CLI arguments
@@ -1126,7 +1125,7 @@ def parse_config_file(
     :return: Parameters
     :rtype: dict
     """
-    param = {}
+    param: Dict[str, Any] = {}
     config_parser = configparser.ConfigParser()
     config_parser.read(args.config)
     # Parse function(non-terminal) symbols and arity
@@ -1136,18 +1135,18 @@ def parse_config_file(
     # Parse constants
     param["constants"] = [float(_.strip()) for _ in config_parser["constants"]["values"].split(",")]
     # Get the type of the search parameter by using the argument parser
-    tmp = ["--config", "True"]
+    tmps = ["--config", "True"]
     for key, value in config_parser["Search parameters"].items():
-        tmp.append("--{}".format(key))
-        tmp.append(value)
-    tmp = parser.parse_args(tmp)
+        tmps.append("--{}".format(key))
+        tmps.append(value)
+    tmp = parser.parse_args(tmps)
     for key, value in vars(tmp).items():
         param[key] = value
 
     return param
 
 
-def setup() -> dict[str, Any]:
+def setup() -> Dict[str, Any]:
     """ Wrapper for set up.
 
     :return: Parameters
