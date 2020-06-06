@@ -5,6 +5,8 @@ import time
 import random
 import math
 import copy
+from typing import Any
+
 """ Implementation of Genetic Programming(GP), the purpose of this
 code is to describe how the algorithm works. The intended use is for
 teaching. The design is supposed to be simple, self contained and use
@@ -42,7 +44,7 @@ The parameters for Pony GP are in a dictionary.
 DEFAULT_FITNESS = -float("inf")
 
 
-def append_node(node, symbol):
+def append_node(node: list[Any], symbol: str) -> list[Any]:
     """
     Return the appended node. Append a symbol to the node.
 
@@ -61,7 +63,7 @@ def append_node(node, symbol):
     return new_node
 
 
-def grow(node, depth, max_depth, full, symbols):
+def grow(node: list[Any], depth: int, max_depth:int, full: bool, symbols: dict[str, str]) -> None:
     """
     Recursively grow a node to max depth in a pre-order, i.e. depth-first
     left-to-right traversal.
@@ -94,7 +96,7 @@ def grow(node, depth, max_depth, full, symbols):
     assert depth <= max_depth, "%d %d" % (depth, max_depth)
 
 
-def get_children(node):
+def get_children(node: list[Any]) -> list[Any]:
     """
     Return the children of the node. The children are all the elements of the
     except the first
@@ -108,7 +110,7 @@ def get_children(node):
     return node[1:]
 
 
-def get_number_of_nodes(root, cnt):
+def get_number_of_nodes(root: list[Any], cnt: int) -> int:
     """
     Return the number of nodes in the tree. A recursive depth-first
     left-to-right search is done
@@ -131,7 +133,7 @@ def get_number_of_nodes(root, cnt):
     return cnt
 
 
-def get_node_at_index(root, idx):
+def get_node_at_index(root: list[Any], idx: int) -> list[Any]:
     """
     Return the node in the tree at a given index. The index is
     according to a depth-first left-to-right ordering.
@@ -169,7 +171,7 @@ def get_node_at_index(root, idx):
     return node
 
 
-def get_max_tree_depth(root, depth, max_tree_depth):
+def get_max_tree_depth(root : list[Any], depth: int, max_tree_depth: int) -> int:
     """
     Return the max depth of the tree. Recursively traverse the tree
 
@@ -201,7 +203,7 @@ def get_max_tree_depth(root, depth, max_tree_depth):
     return max_tree_depth
 
 
-def get_depth_at_index(node, idx, node_idx, depth, idx_depth=0):
+def get_depth_at_index(node: list[Any], idx: int, node_idx: int, depth: int, idx_depth: int=0) -> tuple[int, int]:
     """
     Return the depth of a node based on the index. The index is based on
     depth-first left-to-right traversal.
@@ -239,7 +241,7 @@ def get_depth_at_index(node, idx, node_idx, depth, idx_depth=0):
     return idx_depth, idx
 
 
-def replace_subtree(new_subtree, old_subtree):
+def replace_subtree(new_subtree: list[Any], old_subtree: list[Any]) -> list[Any]:
     """
     Replace a subtree.
 
@@ -256,7 +258,7 @@ def replace_subtree(new_subtree, old_subtree):
         old_subtree.append(copy.deepcopy(node))
 
 
-def get_random_symbol(depth, max_depth, symbols, full=False):
+def get_random_symbol(depth: int, max_depth: int, symbols: dict[str, str], full: bool=False) -> str:
     """
     Return a randomly chosen symbol. The depth determines if a terminal
     must be chosen. If `full` is specified a function will be chosen
@@ -292,7 +294,7 @@ def get_random_symbol(depth, max_depth, symbols, full=False):
     return symbol
 
 
-def sort_population(individuals):
+def sort_population(individuals: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Return a list sorted on the fitness value of the individuals in
     the population. Descending order.
@@ -310,7 +312,7 @@ def sort_population(individuals):
     return individuals
 
 
-def evaluate_individual(individual, fitness_cases, targets):
+def evaluate_individual(individual: dict[str, Any], fitness_cases: list[float], targets: list[float]):
     """
     Evaluate fitness based on fitness cases and target values. Fitness
     cases are a set of exemplars (input and output points) by
@@ -345,7 +347,7 @@ def evaluate_individual(individual, fitness_cases, targets):
     assert individual['fitness'] <= 0
 
 
-def evaluate(node, case):
+def evaluate(node: list[Any], case: list[float]) -> float:
     """
     Evaluate a node recursively. The node's symbol string is evaluated.
 
@@ -390,7 +392,7 @@ def evaluate(node, case):
         return float(symbol)
 
 
-def initialize_population(param):
+def initialize_population(param: dict[str, Any]) -> list[dict[str, Any]]:
     """
     Ramped half-half initialization. The individuals in the
     population are initialized using the grow or the full method for
@@ -430,7 +432,7 @@ def initialize_population(param):
     return individuals
 
 
-def evaluate_fitness(individuals, param, cache):
+def evaluate_fitness(individuals: list[dict[str, Any]], param: dict[str, Any], cache: dict[str, float]) -> dict[str, Any]:
     """
     Evaluation each individual of the population.
     Uses a simple cache for reducing number of evaluations of individuals.
@@ -463,7 +465,7 @@ def evaluate_fitness(individuals, param, cache):
 
 
 
-def search_loop(population, param):
+def search_loop(population: list[dict[str, Any]], param: dict[str, Any]) -> dict[str, Any]:
     """
     Return the best individual from the evolutionary search
     loop. Starting from the initial population.
@@ -546,7 +548,7 @@ def search_loop(population, param):
     return best_ever
 
 
-def print_stats(generation, individuals, duration, param):
+def print_stats(generation: int, individuals: list[dict[str, Any]], duration: float, param: dict[str, Any]) -> None:
     """
     Print the statistics for the generation and population.
 
@@ -560,7 +562,7 @@ def print_stats(generation, individuals, duration, param):
     :type param: dict
     """
 
-    def get_ave_and_std(values):
+    def get_ave_and_std(values: list[float]) -> tuple[float]:
         """
         Return average and standard deviation.
         :param values: Values to calculate on
@@ -599,7 +601,7 @@ def print_stats(generation, individuals, duration, param):
          individuals[0]))
 
 
-def subtree_mutation(individual, param):
+def subtree_mutation(individual: dict[str, Any], param: dict[str, Any]) -> dict[str, Any]:
     """Subtree mutation. Pick a node and grow it.
 
         :param individual: Individual to mutate
@@ -637,7 +639,7 @@ def subtree_mutation(individual, param):
     return new_individual
 
 
-def subtree_crossover(parent1, parent2, param):
+def subtree_crossover(parent1: dict[str, Any], parent2: dict[str, Any], param: dict[str, Any]) -> tuple[dict[str, Any]]:
     """
     Returns two individuals. The individuals are created by
     selecting two random nodes from the parents and swapping the
@@ -705,7 +707,7 @@ def subtree_crossover(parent1, parent2, param):
     return offsprings
 
 
-def tournament_selection(population, param):
+def tournament_selection(population: list[dict[str, Any]], param: dict[str, Any]) -> list[dict[str, Any]]:
     """
     Return individuals from a population by drawing
     `tournament_size` competitors randomly and selecting the best
@@ -734,7 +736,7 @@ def tournament_selection(population, param):
     return winners
 
 
-def generational_replacement(new_population, old_population, param):
+def generational_replacement(new_population: list[dict[str, Any]], old_population:list[dict[str, Any]], param: dict[str, Any]) -> list[dict[str, Any]]:
     """
     Return new a population. The `elite_size` best old_population
     are appended to the new population. They are kept in the new
@@ -765,7 +767,7 @@ def generational_replacement(new_population, old_population, param):
     return new_population[:param["population_size"]]
 
 
-def run(param):
+def run(param: dict[str, Any]) -> dict[str, Any]:
     """
     Return the best solution. Create an initial
     population. Perform an evolutionary search.
@@ -784,7 +786,7 @@ def run(param):
     return best_ever
 
 
-def out_of_sample_test(individual, fitness_cases, targets):
+def out_of_sample_test(individual: dict[str, Any], fitness_cases: list[float], targets: list[float]) -> None:
     """
     Out-of-sample test on an individual solution.
 
@@ -799,7 +801,7 @@ def out_of_sample_test(individual, fitness_cases, targets):
     print("Best solution on test data:" + str(individual))
 
 
-def parse_exemplars(file_name):
+def parse_exemplars(file_name: str) -> tuple[list[float]]:
     """
     Parse a CSV file. Parse the fitness case and split the data into
     Test and train data. In the fitness case file each row is an exemplar
@@ -809,7 +811,7 @@ def parse_exemplars(file_name):
     :param file_name: CSV file with header
     :type file_name: str
     :return: Fitness cases and targets
-    :rtype: list
+    :rtype: tuple
     """
 
     # Open file
@@ -835,7 +837,7 @@ def parse_exemplars(file_name):
     return fitness_cases, targets
 
 
-def get_symbols(arities):
+def get_symbols(arities: dict[str, int]) -> dict[str, Any]:
     """Return a symbol dictionary. Helper method to keep the code clean. 
 
     The nodes in a GP tree consists of different symbols. The symbols
@@ -874,7 +876,7 @@ def get_symbols(arities):
     return {"arities": arities, "terminals": terminals, "functions": functions}
 
 
-def get_arities(param, outputs=1):
+def get_arities(param: dict[str, Any], outputs: int=1) -> dict[str, Any]:
     """Assign values to arities dictionary. Variables are taken from
     fitness case file header. Constants are read from config file.
 
@@ -911,7 +913,7 @@ def get_arities(param, outputs=1):
     return arities
 
 
-def get_test_and_train_data(fitness_cases_file, test_train_split):
+def get_test_and_train_data(fitness_cases_file: str, test_train_split: float) -> tuple[dict[str, list[float]]]:
     """Return test and train data. Random selection or exemplars(ros)
     from file containing data.
 
@@ -949,7 +951,7 @@ def get_test_and_train_data(fitness_cases_file, test_train_split):
     })
 
 
-def parse_arguments():
+def parse_arguments() -> dict[str, Any]:
     """
     Returns a dictionary of the default parameters, or the ones set by
     commandline arguments
@@ -1074,7 +1076,7 @@ def parse_arguments():
     return param
 
 
-def parse_config_file(args, parser):
+def parse_config_file(args: "argparse.Namespace", parser: "argparse.ArgumentParser") -> dict[str, Any]:
     """Parse configuration file.
 
     :param args: CLI arguments
@@ -1105,7 +1107,7 @@ def parse_config_file(args, parser):
     return param
 
 
-def setup():
+def setup() -> dict[str, Any]:
     """ Wrapper for set up.
 
     :return: Parameters
@@ -1137,7 +1139,7 @@ def setup():
     return param
 
 
-def main():
+def main() -> None:
     """Search. Evaluate best solution on out-of-sample data"""
 
     # Setup
