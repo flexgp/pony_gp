@@ -32,7 +32,7 @@ exemplars are generated from `y = x0^2 + x1^2` from range `[-5,5]`
 
 ## Requirements
 
-Python 3
+Python >= 3.6
 
 ## Usage
 
